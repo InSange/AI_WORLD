@@ -31,31 +31,55 @@ name_en: Human
 category: humanoid
 tier: 1
 description: >
-  가장 보편적이며 다양한 환경에 적응하는 능력을 지닌 종족.
-  마법이나 육체적 능력보다는 조직력과 기술로 대륙 패권을 노린다.
+  가장 보편적인 종족이나 개체 능력은 평범하다.
+  산에서는 엘프보다 느리고, 바다에서는 수인보다 약하며, 추위엔 드워프보다 취약하다.
+  그러나 인간의 진짜 강점은 '모이는 것'이다. 여럿이 모여 역할을 나누고
+  전술을 짜면 어떤 종족도 쉽게 무시하지 못하는 집단이 된다.
+
+# 지형 패널티: 인간은 모든 지형 패널티를 정상 적용받는다
+# 산악 -20%, 설원 -25%, 사막 -15%, 해안 전투 -20% 등
+terrain_penalty_exempt: false
 
 stats:
   max_population: 10000
-  growth_rate: 1.005      # 보통 번식 (너무 빠르지 않게 조절)
+  growth_rate: 1.005
   military_strength: 60
   magic_affinity: 30
-  technology_level: 65    # 기술력 중상위권 (초반 급성장 방지)
-  adaptability: 95        # 최고 적응력
-  lifespan: 25920         # ~72년 (360틱/년)
+  technology_level: 65
+  adaptability: 95
+  lifespan: 25920
 
 special_traits:
-  - id: adaptability_bonus
-    name: "만능 적응"
-    description: "모든 지형에서 패널티 없음. 다른 종족과 협력 시 시너지 +10%"
-  - id: tech_research
-    name: "기술 혁신"
-    description: "기술 연구 속도 +15%, 매 150틱마다 소규모 기술 발전 이벤트 (초반 발전 완급 조절)"
+  - id: collective_intelligence
+    name: "집단 지성"
+    description: >
+      인간은 개인보다 집단에서 강해진다.
+      동일 영역 내 인구 규모에 따라 기술 연구 속도 보정:
+        인구 500 이상: +10% / 1000 이상: +20% / 2000 이상: +30%
+      단, 혼자 또는 소규모(100 이하)일 때는 연구 속도 -10%
+
+  - id: formation_tactics
+    name: "전술 조합"
+    description: >
+      인간은 개체 전투력이 낮지만 역할 분담으로 보완한다.
+      동일 전투에 참가하는 인간 유닛 수에 따라 전투력 보정:
+        100명 미만: 보정 없음 (개체 약점 그대로)
+        100~499명: +15% / 500~999명: +25% / 1000명 이상: +35%
+      사기(morale)가 낮으면 보정이 절반으로 감소
+
+  - id: knowledge_sharing
+    name: "지식 공유"
+    description: >
+      인간 정착지에서는 지식이 빠르게 퍼진다.
+      교역로가 연결된 도시 수가 많을수록 기술 연구 공유 효율 증가.
+      타 종족과 동맹 시 해당 종족 기술의 10%를 흡수 학습.
 
 behavior:
   aggression: 0.40
-  expansion_drive: 0.60   # 영토 확장 욕구 중간 (초반 폭발 방지)
-  alliance_tendency: 0.65
+  expansion_drive: 0.60
+  alliance_tendency: 0.65   # 집단에서 강해지므로 동맹 선호
   trade_focus: 0.70
+  isolationism: 0.10
 
 diplomacy_trait:
   trust_rate: 1.0
@@ -65,7 +89,7 @@ diplomacy_trait:
 
 diplomacy_defaults:
   - target: elf
-    affinity: 10          # 인간은 엘프를 동경하지만 상대방이 경계함
+    affinity: 10
   - target: dwarf
     affinity: 40
   - target: halfling
