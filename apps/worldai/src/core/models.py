@@ -146,10 +146,10 @@ class RaceState:
     tier: int
 
     # 동적 상태 (매 틱 변화)
-    population: float
     military_strength: float
     magic_affinity: float
     technology_level: float
+    _population: float = field(default=0.0, repr=False)  # 내부 저장용 (필요시)
     morale: float = 1.0          # 0.0 ~ 1.0 (사기)
 
     # 상한 / 성장 한계 (YAML에서 로드)
@@ -176,6 +176,15 @@ class RaceState:
 
     # 상태 플래그
     is_alive: bool = True
+
+    @property
+    def population(self) -> float:
+        """종족 전체 인구 (하위 파벌들의 합계 - 엔진에서 업데이트 필요)"""
+        return self._population
+
+    @population.setter
+    def population(self, value: float):
+        self._population = value
 
     def __str__(self) -> str:
         return f"{self.name}(pop={int(self.population)}, tier={self.tier})"
@@ -365,7 +374,7 @@ class Faction:
 
     # 규모 (인구에 따라 자동 갱신)
     scale: SettlementScale = SettlementScale.VILLAGE
-    population: float = 200.0
+    population_segments: list[PopulationSegment] = field(default_factory=list)
 
     # 소속
     affiliation_type: AffiliationType = AffiliationType.INDEPENDENT
@@ -392,6 +401,11 @@ class Faction:
 
     # 파벌 간 외교 (target_faction_id → affinity)
     faction_affinity: dict[str, float] = field(default_factory=dict)
+
+    @property
+    def population(self) -> float:
+        """세그먼트 인구 총합"""
+        return sum(s.count for s in self.population_segments)
 
     def update_scale(self) -> None:
         """인구에 따라 규모 자동 갱신"""
@@ -528,8 +542,8 @@ class PopulationSegment:
         rest_ratio = 1.0 - mil_ratio - 0.02  # refugee 2% 고정
 
         return [
-            PopulationSegment(PopulationType.SETTLER,    total_pop * rest_ratio * 0.76),
-            PopulationSegment(PopulationType.MERCHANT,   total_pop * rest_ratio * 0.11),
+            PopulationSegment(PopulationType.SETTLER,    total_pop * rest_ratio * 0.80),
+            PopulationSegment(PopulationType.MERCHANT,   total_pop * rest_ratio * 0.12),
             PopulationSegment(PopulationType.ADVENTURER, total_pop * rest_ratio * 0.08),
             PopulationSegment(PopulationType.MILITARY,   total_pop * mil_ratio),
             PopulationSegment(PopulationType.REFUGEE,    total_pop * 0.02),

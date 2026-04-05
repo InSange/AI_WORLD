@@ -1,7 +1,7 @@
 # WorldAI — Phase 상태 트래커
 
 > **마지막 업데이트**: 2026-04-06
-> **현재 Phase**: Phase 5 준비 중 (Phase 4.6 완료)
+> **현재 Phase**: Phase 5 준비 중 (Phase 4.7 완료)
 
 ---
 
@@ -17,6 +17,7 @@
 | Phase 4 | FastAPI REST 서버 | ✅ 완료 | #8 |
 | Phase 4.5 | 밸런스 수정 (이벤트 시스템) | ✅ 완료 | #9 |
 | Phase 4.6 | 시간 시스템 모델 (낮/밤·유동인구) | ✅ 완료 | #11 |
+| Phase 4.7 | 영토 기반 인구 & 그리드 시스템 | ✅ 완료 | #12 |
 | Phase 5 | 웹 대시보드 (실시간 시각화) | ⬜ 대기 | - |
 | Phase 6 | CI/CD 구축 | ⬜ 대기 | - |
 | Phase 7 | Plugin SDK | ⬜ 대기 | - |
@@ -50,7 +51,8 @@ docs/
   religion_system.md - 교단 시스템
   rank_level_system.md - 등급/레벨/직위 3축
   transcendent_system.md - 초월자 시스템
-  time_system.md    - 시간 시스템 ← 신규 추가
+  time_system.md    - 시간 시스템
+  map.py           - 100x80 그리드 맵 시스템 ← 신규 추가
 ```
 
 ---
@@ -69,6 +71,8 @@ docs/
 [확정] 종족별 시간대 활성도 배율 (언데드 DEEP_NIGHT: 2.0, 등)
 [확정] 유동 인구 5타입: SETTLER / MERCHANT / ADVENTURER / MILITARY / REFUGEE
 [확정] 정착민은 인구 과잉에도 이동 안 함 (기근·전쟁 시에만 이주민 전환)
+[확정] 100x80 그리드 맵: 위도(Y) 기준 지형 생성 (북부-설원, 중앙-평원, 남부-사막)
+[확정] 틱당 이동: 1틱(1시간)마다 인접 1타일 이동 가능
 [미확정] 멀티플레이어 시 틱 동기화 방식
 ```
 
@@ -152,25 +156,23 @@ GET  /player/grid-view         - 반경 N타일 현황
 
 ```
 [Antigravity → 다음 작업자]
-Phase 4.5까지 완료. 서버 정상 동작 확인.
-Phase 4.6 진행 중 (시간 시스템 모델 미구현).
+Phase 4.7까지 완료. 그리드 맵(100x80) 및 영토 기반 인구 시스템(Segmentation) 구축 완료.
+서버 정상 동작 및 API 응답(GET /world/map 등) 확인됨.
 
 서버 실행:
   cd apps/worldai
   py -m uvicorn src.api.main:app --port 8000 --reload
 
-다음 구현 순서:
-  1. models.py에 DayPhase/PopulationType/TimeConfig 추가
-  2. world.py에 hour_of_day, day_phase 프로퍼티 + 2160틱/계절 설정
-  3. event_system.py 이벤트 확률 재조정 (1틱=1시간 기준)
-  4. asteria.yaml에 time_config 블록 추가
-  5. Phase 5 웹 대시보드
+다음 구현 순서 (Phase 5):
+  1. FastAPI WebSocket 엔드포인트 구축
+  2. 대시보드 프론트엔드 (React+TS) 스켈레톤 생성
+  3. 실시간 맵 렌더링 (Canvas/SVG 기반)
+  4. 인구 이동/이벤트 실시간 피드 시각화
 
 핵심 설계:
-  - 1틱 = 1시간, 온라인 전용 틱 처리
-  - 낮/밤 5구간 × 종족별 활성도 배율
-  - 유동 인구 5타입 (SETTLER 70% / MERCHANT 10% / ADVENTURER 8% / MILITARY 10% / REFUGEE 2%)
-  - 플레이어는 그리드 단위로 존재, 1틱=1행동
+  - 인구는 Faction 산하의 PopulationSegment 합계로 자동 계산됨 (RaceState.population은 프로퍼티)
+  - 1틱 = 1시간, 1틱당 1타일 이동 규칙 적용 중
+  - GET /world/map 응답의 'data' 리스트는 8000개 타일의 지형 인덱스임
   
-docs/time_system.md 참고 필수.
+docs/time_system.md 및 docs/milestones/ 관련 파일 참고 필수.
 ```

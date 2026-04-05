@@ -58,6 +58,23 @@ class SimulationStatusSchema(BaseModel):
     total_events: int
 
 
+# ── 맵 및 지형 ────────────────────────────────
+
+class MapTileSchema(BaseModel):
+    x: int
+    y: int
+    tile_type: str
+    tile_display: str
+    faction_id: str | None = None
+    population_density: float = 0.0
+
+
+class WorldMapSchema(BaseModel):
+    width: int
+    height: int
+    data: list[int]  # 지형 타입 인덱스 리스트 (압축)
+
+
 # ── 세계 전체 상태 ────────────────────────────
 
 class WorldStateSchema(BaseModel):
@@ -68,6 +85,7 @@ class WorldStateSchema(BaseModel):
     races: dict[str, RaceStatusSchema]
     diplomacy: dict[str, DiplomacyRelationSchema]
     recent_events: list[EventSchema]
+    map: WorldMapSchema | None = None
 
 
 # ── 틱 결과 ───────────────────────────────────
@@ -97,6 +115,13 @@ class LeaderSchema(BaseModel):
     ambition: float
 
 
+class PopulationSegmentSchema(BaseModel):
+    pop_type: str
+    pop_display: str
+    count: int
+    can_travel: bool
+
+
 class FactionSchema(BaseModel):
     id: str
     name: str
@@ -105,6 +130,7 @@ class FactionSchema(BaseModel):
     scale: str
     scale_display: str
     population: int
+    population_segments: list[PopulationSegmentSchema]
     military_strength: float
     affiliation_type: str
     parent_faction_id: str | None

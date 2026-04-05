@@ -13,6 +13,7 @@ from fastapi import APIRouter, Request, HTTPException, Query
 from src.api.schemas import (
     FactionSchema, FactionListSchema, LeaderSchema,
     ReligionSchema, TranscendentTriggerRequest, MessageResponse,
+    PopulationSegmentSchema,
 )
 from src.core.models import TranscendentType
 
@@ -46,6 +47,15 @@ def _faction_to_schema(faction) -> FactionSchema:
         scale=faction.scale.value,
         scale_display=faction.scale.display(),
         population=int(faction.population),
+        population_segments=[
+            PopulationSegmentSchema(
+                pop_type=s.pop_type.value,
+                pop_display=s.pop_type.display(),
+                count=int(s.count),
+                can_travel=s.can_travel,
+            )
+            for s in faction.population_segments
+        ],
         military_strength=round(faction.military_strength, 1),
         affiliation_type=faction.affiliation_type.value,
         parent_faction_id=faction.parent_faction_id,

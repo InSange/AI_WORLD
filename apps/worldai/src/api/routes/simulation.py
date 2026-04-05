@@ -62,6 +62,7 @@ async def tick_once(req: Request):
         get_race_growth=lambda rid: race_growths.get(rid, 1.005),
         season_pop_mod=season_mod,
         tick=world.tick,
+        world_map=world.map,
     )
     result.events.extend(faction_events)
 
@@ -114,6 +115,7 @@ async def run_ticks(
             get_race_growth=lambda rid: race_growths.get(rid, 1.005),
             season_pop_mod=season_mod,
             tick=world.tick,
+            world_map=world.map,
         )
         all_events = result.events + faction_events
         for e in all_events:

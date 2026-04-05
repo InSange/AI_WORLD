@@ -20,6 +20,7 @@ from .models import (
     Faction, Character, Religion, EventLog,
     AffiliationType, SettlementScale, DeityType,
     TitleType, TranscendentInfo, TranscendentType,
+    PopulationSegment,
 )
 
 # ── 기본 종교 데이터 ───────────────────────────────────
@@ -150,13 +151,16 @@ class FactionManager:
             name=name,
             race=race,
             region=region,
-            population=population,
             affiliation_type=affiliation,
             parent_faction_id=parent_id,
             location_x=location[0],
             location_y=location[1],
             specialty=specialty or [],
         )
+        
+        # 외부 인구 입력을 기반으로 최초 규모 및 세그먼트 설정
+        faction.scale = SettlementScale.from_population(population)
+        faction.population_segments = PopulationSegment.distribute(population, faction.scale)
         faction.update_scale()
 
         # 종교 초기 교세 적용
@@ -234,20 +238,25 @@ class FactionManager:
         get_race_growth: Callable[[str], float],  # race_id → growth_rate
         season_pop_mod: float,
         tick: int,
+        world_map: Optional["WorldMap"] = None,
     ) -> list[EventLog]:
         """매 틱 파벌 상태 갱신"""
         events: list[EventLog] = []
 
         for faction in list(self.all_factions()):
-            # 1. 인구 성장
+            # 1. 인구 성장 (세그먼트별)
             growth = get_race_growth(faction.race)
             effective = 1.0 + (growth - 1.0) * season_pop_mod
-            faction.population = min(
-                float(faction.scale.value == "empire" and 999999 or
-                      {"outpost": 50, "village": 500, "town": 2000, "city": 5000,
-                       "kingdom": 15000, "empire": 999999}.get(faction.scale.value, 9999)),
-                faction.population * effective,
-            )
+            
+            # 각 세그먼트 성장
+            for segment in faction.population_segments:
+                # 군인은 성장이 느리거나 충원 중심 (0.2배)
+                seg_growth = effective if segment.pop_type != "military" else 1.0 + (effective-1.0)*0.2
+                segment.count *= seg_growth
+
+            # 2. 인구 이동 (Migration)
+            self._handle_migration(faction, world_map)
+
             old_scale = faction.scale
             faction.update_scale()
 
@@ -308,6 +317,43 @@ class FactionManager:
     def _get_leader_title(self, race: str, scale: str) -> str:
         race_titles = _RACE_LEADER_TITLE.get(race, {})
         return race_titles.get(scale, "지도자")
+
+    def _handle_migration(self, faction: Faction, world_map: Optional["WorldMap"]) -> None:
+        """파벌 내 유동 인구(상인, 모험가 등)의 이동 처리"""
+        for segment in faction.population_segments:
+            if not segment.can_travel:
+                continue
+            
+            # 틱당 약 1%~5%의 유동 인구가 '이동' 상태로 전환된다고 가정
+            # (지금은 단순화를 위해 좌표를 목적지로 조금씩 옮기거나, 인근 파벌로 직접 전입)
+            if segment.count < 1.0:
+                continue
+                
+            move_count = segment.count * 0.05  # 5% 이동
+            
+            # 목적지 결정 (부모/자식 파벌 방향 또는 랜덤)
+            # 여기서는 단순하게 근처 파벌을 찾아 인구를 전달함
+            targets = [f for f in self.all_factions() 
+                       if f.id != faction.id and f.race == faction.race
+                       and abs(f.location_x - faction.location_x) <= 10
+                       and abs(f.location_y - faction.location_y) <= 10]
+            
+            if targets:
+                target = random.choice(targets)
+                # 현재 파벌에서 차감
+                segment.count -= move_count
+                # 대상 파벌에 가산
+                self._add_population_to_faction(target, segment.pop_type, move_count)
+
+    def _add_population_to_faction(self, faction: Faction, pop_type: str, count: float) -> None:
+        """특정 파벌의 특정 타입 인구 증가"""
+        for segment in faction.population_segments:
+            if segment.pop_type == pop_type:
+                segment.count += count
+                return
+        # 해당 타입이 없으면 추가
+        from .models import PopulationType, PopulationSegment
+        faction.population_segments.append(PopulationSegment(PopulationType(pop_type), count))
 
     def _spread_religion(self, faction: Faction, tick: int) -> EventLog | None:
         """교세 전파 및 갈등 체크"""

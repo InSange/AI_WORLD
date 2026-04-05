@@ -27,11 +27,13 @@ if str(_APP_ROOT) not in sys.path:
 
 from src.core.models import (
     Season, RaceState, AffinityLevel, Action, ActionType,
-    EventLog, TickResult, DayPhase, TimeConfig,
+    EventLog, TickResult, DayPhase, TimeConfig, SettlementScale,
+    PopulationSegment,
 )
 from src.core.diplomacy import DiplomacySystem
 from src.core.race_agent import RaceAgent, execute_action
 from src.core.event_system import EventSystem
+from src.core.map import WorldMap
 
 
 # ── 계절 설정 ───────────────────────────────
@@ -108,6 +110,9 @@ class World:
     # 시간 설정 (YAML에서 로드, 기본: 1틱=1시간)
     time_config: TimeConfig = field(default_factory=TimeConfig)
 
+    # 맵 (100x80 그리드)
+    map: WorldMap = field(default_factory=WorldMap)
+
     races: dict[str, RaceState] = field(default_factory=dict)
     diplomacy: DiplomacySystem = field(default_factory=DiplomacySystem)
     event_log: list[EventLog] = field(default_factory=list)
@@ -152,10 +157,17 @@ class World:
         from src.config.loader import load_world, load_all_races
 
         world_cfg = load_world(world_id)
+        
+        # 맵 설정 로드
+        map_cfg = world_cfg.raw.get("map", {})
         world = cls(
             id=world_cfg.id,
             name=world_cfg.name,
             description=world_cfg.description,
+            map=WorldMap(
+                width=map_cfg.get("width", 100),
+                height=map_cfg.get("height", 80)
+            )
         )
 
         all_races = load_all_races()
@@ -173,10 +185,10 @@ class World:
                 name=cfg.name,
                 category=cfg.category,
                 tier=cfg.tier,
-                population=float(start.get("population", cfg.stats.max_population * 0.1)),
                 military_strength=float(cfg.stats.military_strength),
                 magic_affinity=float(cfg.stats.magic_affinity),
                 technology_level=float(start.get("tech_level", cfg.stats.technology_level)),
+                _population=float(start.get("population", cfg.stats.max_population * 0.1)),
                 max_population=cfg.stats.max_population,
                 growth_rate=cfg.stats.growth_rate,
                 aggression=cfg.behavior.aggression,
@@ -237,15 +249,13 @@ class World:
         tech_mod = SEASON_TECH_MODIFIER[self.season]
 
         # 2. 인구 변화 ─────────────────────────────
+        # RaceState 인구는 하위 파벌들의 합계로 갱신 (settlement-based population core)
         for race in self.active_races:
             old_pop = race.population
-            effective_growth = 1.0 + (race.growth_rate - 1.0) * pop_mod
-            # 언데드: 자연 번식 없음
-            if race.growth_rate <= 1.0:
-                effective_growth = 1.0
-            # soft cap: max_population을 살짝 넘어갈 수 있음 (overflow 이벤트가 처리)
-            raw_pop = race.population * effective_growth
-            race.population = min(float(race.max_population) * 1.02, raw_pop)
+            factions = self._api_state_fm.by_race(race.id) if hasattr(self, "_api_state_fm") else []
+            # RaceState._population 직접 업데이트 (setter 호출)
+            if factions:
+                race.population = sum(f.population for f in factions)
             pop_changes[race.id] = race.population - old_pop
 
         # 2b. 세계 이벤트 (인구 과밀·습격·몬스터·역병) ─

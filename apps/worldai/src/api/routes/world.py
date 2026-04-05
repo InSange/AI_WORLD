@@ -12,6 +12,7 @@ from fastapi import APIRouter, Request, HTTPException, Query
 from src.api.schemas import (
     WorldStateSchema, RaceStatusSchema,
     DiplomacyRelationSchema, EventSchema,
+    WorldMapSchema,
 )
 from src.core.models import AffinityLevel
 
@@ -69,7 +70,9 @@ async def get_world(req: Request):
         season=world.season.value,
         season_display=world.season.display(),
         races=races, diplomacy=diplomacy, recent_events=events,
+        map=WorldMapSchema(**world.map.to_summary_dict())
     )
+
 
 
 # ── GET /world/races ──────────────────────────────────
@@ -150,6 +153,19 @@ async def get_diplomacy(
             "display": lv.display(),
         })
     return {"total": len(result), "relations": result}
+
+
+# ── GET /world/map ────────────────────────────────────
+
+@router.get("/map", response_model=WorldMapSchema, summary="세계 지도 데이터")
+async def get_map(req: Request):
+    """
+    100x80 그리드 지형 데이터를 반환한다.
+    지형 타입이 인덱스로 압축된 리스트 형태.
+    """
+    world = _world(req)
+    return WorldMapSchema(**world.map.to_summary_dict())
+
 
 
 # ── GET /world/events ─────────────────────────────────
