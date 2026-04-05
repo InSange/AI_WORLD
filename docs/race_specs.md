@@ -36,10 +36,10 @@ description: >
 
 stats:
   max_population: 10000
-  growth_rate: 1.008      # 빠른 번식
+  growth_rate: 1.005      # 보통 번식 (너무 빠르지 않게 조절)
   military_strength: 60
   magic_affinity: 30
-  technology_level: 75    # 기술력 최상위권
+  technology_level: 65    # 기술력 중상위권 (초반 급성장 방지)
   adaptability: 95        # 최고 적응력
   lifespan: 25920         # ~72년 (360틱/년)
 
@@ -49,11 +49,11 @@ special_traits:
     description: "모든 지형에서 패널티 없음. 다른 종족과 협력 시 시너지 +10%"
   - id: tech_research
     name: "기술 혁신"
-    description: "기술 연구 속도 +20%, 매 100틱마다 소규모 기술 발전 이벤트"
+    description: "기술 연구 속도 +15%, 매 150틱마다 소규모 기술 발전 이벤트 (초반 발전 완급 조절)"
 
 behavior:
   aggression: 0.40
-  expansion_drive: 0.75   # 영토 확장 욕구 강함
+  expansion_drive: 0.60   # 영토 확장 욕구 중간 (초반 폭발 방지)
   alliance_tendency: 0.65
   trade_focus: 0.70
 
@@ -65,7 +65,7 @@ diplomacy_trait:
 
 diplomacy_defaults:
   - target: elf
-    affinity: 25
+    affinity: 10          # 인간은 엘프를 동경하지만 상대방이 경계함
   - target: dwarf
     affinity: 40
   - target: halfling
@@ -106,30 +106,38 @@ special_traits:
   - id: nature_bond
     name: "자연과의 유대"
     description: "숲 지형에서 방어력 +30%, 이동 불이익 없음. 벌목 시 친밀도 패널티"
+  - id: isolationist
+    name: "폐쇄적 고립주의"
+    description: "외부 종족의 숲 진입 시 즉각 경보. 다른 종족이 먼저 접촉해도 외교 이벤트 발생 확률 -40%. 혼자 있을 때 마법 연구 효율 +20%"
 
 behavior:
-  aggression: 0.25        # 비공격적
-  expansion_drive: 0.20   # 영토 유지 중심, 확장 최소
-  alliance_tendency: 0.45 # 신중한 외교
-  trade_focus: 0.50
+  aggression: 0.25        # 비공격적 (선제 공격은 거의 안 함)
+  expansion_drive: 0.10   # 영토 확장 의지 매우 낮음 — 현재 영역 사수에만 집중
+  alliance_tendency: 0.20 # 동맹 매우 꺼림. 공동의 적이 있어야 겨우 협력
+  trade_focus: 0.30       # 교역도 최소한만
+  isolationism: 0.90      # 폐쇄 성향 (높을수록 외부 접촉 회피)
 
 diplomacy_trait:
-  trust_rate: 0.70        # 신뢰 쌓기 느림
-  grudge_rate: 1.50       # 원한 빠름
-  memory_duration: 800    # 오래 기억
-  betrayal_penalty: 40    # 배신 패널티 큼
+  trust_rate: 0.50        # 신뢰 쌓기 매우 느림 (수백 년을 봐야 믿음)
+  grudge_rate: 1.80       # 원한 쌓기 아주 빠름
+  memory_duration: 1200   # 아주 오래 기억 (수천 년도 잊지 않음)
+  betrayal_penalty: 60    # 배신 시 관계 회복 거의 불가
 
 diplomacy_defaults:
   - target: human
-    affinity: 25
+    affinity: -20         # 인간을 경계함. 빠른 팽창과 자연 훼손을 위협으로 인식
   - target: fairy
-    affinity: 70
+    affinity: 70          # 같은 자연 존재
+  - target: beastman
+    affinity: 20          # 자연 공유하는 수인은 그나마 허용
   - target: orc
     affinity: -60
   - target: dragon
-    affinity: 10
+    affinity: 10          # 고대 존재에 대한 경외
   - target: undead
     affinity: -70
+  - target: dwarf
+    affinity: -5          # 드워프의 채굴로 자연 파괴 — 달갑지 않음
 ```
 
 ---
