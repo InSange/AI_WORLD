@@ -409,3 +409,160 @@ class Faction:
         return (f"[{self.scale.display()}] {self.name} "
                 f"(pop={int(self.population)}, {self.region}) "
                 f"| {leader_str}")
+
+
+# ─────────────────────────────────
+# 시간 시스템 (Time System)
+# ─────────────────────────────────
+
+class DayPhase(str, Enum):
+    """
+    하루 24시간을 5구간으로 나눈 시간대.
+    1틱 = 1시간이므로 tick % 24 = 현재 시각.
+    계절에 따라 낮/밤 경계가 달라진다.
+    """
+    DEEP_NIGHT = "deep_night"  # 00~04 : 언데드·악마 최강, 위험 최고
+    DAWN       = "dawn"        # 04~07 : 드래곤 사냥, 모험가 출발
+    DAY        = "day"         # 07~17 : 상인·교역·건설 활성
+    DUSK       = "dusk"        # 17~20 : 기사단 귀환, 경계 전환
+    NIGHT      = "night"       # 20~24 : 페어리 달빛, 정탐 활동
+
+    def display(self) -> str:
+        labels = {
+            "deep_night": "깊은 밤", "dawn": "새벽",
+            "day": "낮", "dusk": "황혼", "night": "밤",
+        }
+        return labels[self.value]
+
+    @staticmethod
+    def from_hour(hour: int) -> "DayPhase":
+        """0~23시 → DayPhase 변환"""
+        if hour < 4:  return DayPhase.DEEP_NIGHT
+        if hour < 7:  return DayPhase.DAWN
+        if hour < 17: return DayPhase.DAY
+        if hour < 20: return DayPhase.DUSK
+        return DayPhase.NIGHT
+
+
+class PopulationType(str, Enum):
+    """
+    유동 인구 타입.
+    파벌 내 인구를 역할별로 분류한다.
+
+    기본 비율 (파벌 규모·종족에 따라 달라짐):
+      SETTLER    70%  정착민  — 농업·생산·세금 기반, 이동 거의 없음
+      MERCHANT   10%  상인    — 마을 간 교역, DAY에만 이동
+      ADVENTURER  8%  모험가  — 탐험·던전, 초월자 이벤트 후보
+      MILITARY   10%  군인    — 전투·점령, 명령 기반 이동
+      REFUGEE     2%  이주민  — 기근·전쟁으로 임시 발생, 타 파벌로 이동
+    """
+    SETTLER    = "settler"
+    MERCHANT   = "merchant"
+    ADVENTURER = "adventurer"
+    MILITARY   = "military"
+    REFUGEE    = "refugee"
+
+    def display(self) -> str:
+        labels = {
+            "settler": "정착민", "merchant": "상인",
+            "adventurer": "모험가", "military": "군인", "refugee": "이주민",
+        }
+        return labels[self.value]
+
+    @property
+    def base_ratio(self) -> float:
+        """기본 인구 비율"""
+        ratios = {
+            "settler": 0.70, "merchant": 0.10,
+            "adventurer": 0.08, "military": 0.10, "refugee": 0.02,
+        }
+        return ratios[self.value]
+
+    @property
+    def mobility(self) -> float:
+        """이동 확률 (0~1)"""
+        mobility = {
+            "settler": 0.03, "merchant": 0.60,
+            "adventurer": 0.35, "military": 0.0, "refugee": 0.90,
+        }
+        return mobility[self.value]
+
+
+@dataclass
+class PopulationSegment:
+    """
+    파벌 내 하나의 인구 세그먼트.
+    Faction.population 대신 이를 타입별로 관리한다 (향후 영토 기반 인구로 전환 시 사용).
+    """
+    pop_type: PopulationType
+    count: float = 0.0
+
+    @property
+    def can_travel(self) -> bool:
+        """DAY 시간대에 이동 가능한지"""
+        return self.pop_type in (
+            PopulationType.MERCHANT,
+            PopulationType.ADVENTURER,
+            PopulationType.REFUGEE,
+        )
+
+    @property
+    def is_combat_unit(self) -> bool:
+        return self.pop_type == PopulationType.MILITARY
+
+    @staticmethod
+    def distribute(total_pop: float, scale: "SettlementScale") -> "list[PopulationSegment]":
+        """
+        총 인구를 규모에 따라 유동 타입별로 분배한다.
+        군집 규모가 클수록 군인 비율이 높아진다.
+        """
+        military_ratios = {
+            SettlementScale.OUTPOST: 0.40,   # 전초기지: 대부분 군인
+            SettlementScale.VILLAGE: 0.05,
+            SettlementScale.TOWN:    0.10,
+            SettlementScale.CITY:    0.12,
+            SettlementScale.KINGDOM: 0.15,
+            SettlementScale.EMPIRE:  0.18,
+        }
+        mil_ratio  = military_ratios.get(scale, 0.10)
+        rest_ratio = 1.0 - mil_ratio - 0.02  # refugee 2% 고정
+
+        return [
+            PopulationSegment(PopulationType.SETTLER,    total_pop * rest_ratio * 0.76),
+            PopulationSegment(PopulationType.MERCHANT,   total_pop * rest_ratio * 0.11),
+            PopulationSegment(PopulationType.ADVENTURER, total_pop * rest_ratio * 0.08),
+            PopulationSegment(PopulationType.MILITARY,   total_pop * mil_ratio),
+            PopulationSegment(PopulationType.REFUGEE,    total_pop * 0.02),
+        ]
+
+
+@dataclass
+class TimeConfig:
+    """
+    시뮬레이션 시간 단위 설정.
+    world YAML의 time_config 블록에서 로드된다.
+    기본값: 1틱 = 1시간, 1계절 = 90일.
+    """
+    tick_unit: str = "hour"       # "hour" | "day" | "minute"
+    hours_per_day: int = 24
+    days_per_season: int = 90
+    online_only: bool = True       # True = 플레이어 행동 시에만 틱 진행
+
+    @property
+    def ticks_per_day(self) -> int:
+        if self.tick_unit == "hour":    return self.hours_per_day
+        if self.tick_unit == "day":     return 1
+        if self.tick_unit == "minute":  return self.hours_per_day * 60
+        return self.hours_per_day
+
+    @property
+    def ticks_per_season(self) -> int:
+        return self.ticks_per_day * self.days_per_season
+
+    @property
+    def ticks_per_year(self) -> int:
+        return self.ticks_per_season * 4
+
+    def __str__(self) -> str:
+        return (f"TimeConfig(1틱={self.tick_unit}, "
+                f"1계절={self.ticks_per_season}틱 ({self.days_per_season}일))")

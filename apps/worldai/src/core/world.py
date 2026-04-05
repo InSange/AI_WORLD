@@ -27,7 +27,7 @@ if str(_APP_ROOT) not in sys.path:
 
 from src.core.models import (
     Season, RaceState, AffinityLevel, Action, ActionType,
-    EventLog, TickResult,
+    EventLog, TickResult, DayPhase, TimeConfig,
 )
 from src.core.diplomacy import DiplomacySystem
 from src.core.race_agent import RaceAgent, execute_action
@@ -37,8 +37,17 @@ from src.core.event_system import EventSystem
 # ── 계절 설정 ───────────────────────────────
 
 SEASONS = [Season.SPRING, Season.SUMMER, Season.AUTUMN, Season.WINTER]
-TICKS_PER_SEASON = 90
-TICKS_PER_YEAR   = TICKS_PER_SEASON * 4  # 360
+
+# ── 기본 TimeConfig (world YAML에서 오버라이드 가능) ─
+_DEFAULT_TIME = TimeConfig()  # 1틱=1시간, 1계절=2160틱
+
+# 계절별 낮 시간 범위 (시작시각, 종료시각)
+_DAY_HOURS: dict[Season, tuple[int, int]] = {
+    Season.SPRING: (6,  18),   # 12시간 낮
+    Season.SUMMER: (4,  20),   # 16시간 낮
+    Season.AUTUMN: (6,  18),   # 12시간 낮
+    Season.WINTER: (8,  16),   #  8시간 낮
+}
 
 # 계절별 인구 성장 배수
 SEASON_POP_MODIFIER: dict[Season, float] = {
@@ -53,8 +62,30 @@ SEASON_TECH_MODIFIER: dict[Season, float] = {
     Season.SPRING: 1.00,
     Season.SUMMER: 0.95,
     Season.AUTUMN: 1.05,
-    Season.WINTER: 1.15,  # 실내 연구 증가
+    Season.WINTER: 1.15,
 }
+
+# 종족별 시간대 활성도 배율 (전투력·이벤트 확률에 곱해짐)
+# 값 없으면 1.0 (중립)
+RACE_PHASE_MODIFIER: dict[str, dict[DayPhase, float]] = {
+    "human":     {DayPhase.DEEP_NIGHT: 0.5, DayPhase.DAWN: 0.8, DayPhase.DAY: 1.0, DayPhase.DUSK: 0.9,  DayPhase.NIGHT: 0.6},
+    "elf":       {DayPhase.DEEP_NIGHT: 0.6, DayPhase.DAWN: 1.2, DayPhase.DAY: 0.8, DayPhase.DUSK: 1.2,  DayPhase.NIGHT: 1.0},
+    "dwarf":     {DayPhase.DEEP_NIGHT: 0.7, DayPhase.DAWN: 0.9, DayPhase.DAY: 1.0, DayPhase.DUSK: 0.9,  DayPhase.NIGHT: 0.8},
+    "orc":       {DayPhase.DEEP_NIGHT: 1.0, DayPhase.DAWN: 0.7, DayPhase.DAY: 0.8, DayPhase.DUSK: 1.1,  DayPhase.NIGHT: 1.3},
+    "halfling":  {DayPhase.DEEP_NIGHT: 0.4, DayPhase.DAWN: 0.9, DayPhase.DAY: 1.0, DayPhase.DUSK: 1.0,  DayPhase.NIGHT: 0.7},
+    "beastman":  {DayPhase.DEEP_NIGHT: 0.9, DayPhase.DAWN: 1.1, DayPhase.DAY: 0.9, DayPhase.DUSK: 1.1,  DayPhase.NIGHT: 1.0},
+    "fairy":     {DayPhase.DEEP_NIGHT: 0.8, DayPhase.DAWN: 1.0, DayPhase.DAY: 0.7, DayPhase.DUSK: 1.0,  DayPhase.NIGHT: 1.3},
+    "dragon":    {DayPhase.DEEP_NIGHT: 0.8, DayPhase.DAWN: 1.3, DayPhase.DAY: 0.7, DayPhase.DUSK: 1.3,  DayPhase.NIGHT: 1.0},
+    "undead":    {DayPhase.DEEP_NIGHT: 2.0, DayPhase.DAWN: 0.3, DayPhase.DAY: 0.2, DayPhase.DUSK: 0.8,  DayPhase.NIGHT: 1.5},
+    "elemental": {DayPhase.DEEP_NIGHT: 1.0, DayPhase.DAWN: 1.0, DayPhase.DAY: 1.0, DayPhase.DUSK: 1.0,  DayPhase.NIGHT: 1.0},
+    "golem":     {DayPhase.DEEP_NIGHT: 1.0, DayPhase.DAWN: 1.0, DayPhase.DAY: 1.0, DayPhase.DUSK: 1.0,  DayPhase.NIGHT: 1.0},
+    "angel_demon":{DayPhase.DEEP_NIGHT: 0.3, DayPhase.DAWN: 1.4, DayPhase.DAY: 1.2, DayPhase.DUSK: 1.1, DayPhase.NIGHT: 0.5},
+}
+
+
+def get_race_phase_modifier(race_id: str, phase: DayPhase) -> float:
+    """종족 + 시간대 활성도 배율 반환 (없으면 1.0)"""
+    return RACE_PHASE_MODIFIER.get(race_id, {}).get(phase, 1.0)
 
 
 # ── World Engine ─────────────────────────────
@@ -74,6 +105,9 @@ class World:
     year: int = 1
     _season_idx: int = field(default=0, repr=False)
 
+    # 시간 설정 (YAML에서 로드, 기본: 1틱=1시간)
+    time_config: TimeConfig = field(default_factory=TimeConfig)
+
     races: dict[str, RaceState] = field(default_factory=dict)
     diplomacy: DiplomacySystem = field(default_factory=DiplomacySystem)
     event_log: list[EventLog] = field(default_factory=list)
@@ -89,6 +123,22 @@ class World:
     @property
     def season(self) -> Season:
         return SEASONS[self._season_idx % 4]
+
+    @property
+    def hour_of_day(self) -> int:
+        """현재 게임 내 시각 (0~23). 1틱=1시간 기준."""
+        return self.tick % self.time_config.ticks_per_day
+
+    @property
+    def day_phase(self) -> DayPhase:
+        """현재 시간대 (DEEP_NIGHT / DAWN / DAY / DUSK / NIGHT)"""
+        return DayPhase.from_hour(self.hour_of_day)
+
+    @property
+    def is_daytime(self) -> bool:
+        """현재 낮인지 (계절별 일조 시간 기준)"""
+        start, end = _DAY_HOURS[self.season]
+        return start <= self.hour_of_day < end
 
     @property
     def active_races(self) -> list[RaceState]:
@@ -157,8 +207,10 @@ class World:
         pop_changes: dict[str, float] = {}
         affinity_changes: list[dict] = []
 
+        ticks_per_season = self.time_config.ticks_per_season
+
         # 1. 시간 진행 ─────────────────────────────
-        if self.tick % TICKS_PER_SEASON == 0:
+        if self.tick % ticks_per_season == 0:
             self._season_idx = (self._season_idx + 1) % 4
             if self._season_idx == 0:
                 self.year += 1
@@ -170,6 +222,16 @@ class World:
                 affected_races=[r.id for r in self.active_races],
             )
             events.append(season_event)
+
+        # 낮/밤 페이즈 로깅 (하루 시작 = 00시)
+        if self.hour_of_day == 0:
+            events.append(EventLog(
+                tick=self.tick,
+                event_type="DAY_START",
+                title=f"[시각] 새벽 00시 (Year {self.year} {self.season.display()})",
+                description=f"낮/밤 사이클: {'낮' if self.is_daytime else '밤'} ({self.day_phase.display()})",
+                affected_races=[],
+            ))
 
         pop_mod  = SEASON_POP_MODIFIER[self.season]
         tech_mod = SEASON_TECH_MODIFIER[self.season]
@@ -198,11 +260,16 @@ class World:
         self.diplomacy.decay_all(decay_rate=0.001)
 
         # 4 & 5. 종족 행동 결정 + 실행 ─────────────
+        phase = self.day_phase
         actions: list[Action] = []
         for race in self.active_races:
             agent = self._agents.get(race.id)
             if agent is None:
                 continue
+            # 시간대 활성도 배율 적용 → 낮에 활동적인 종족은 밤에 행동 안 함
+            phase_mod = get_race_phase_modifier(race.id, phase)
+            if phase_mod < 0.4:
+                continue  # 활성도 너무 낮으면 이번 틱 행동 스킵
             action = agent.decide_action(
                 race=race,
                 all_races=self.races,
