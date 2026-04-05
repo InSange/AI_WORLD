@@ -44,6 +44,8 @@ class DiplomacySystem:
 
     def __init__(self) -> None:
         self._relations: dict[tuple[str, str], AffinityRecord] = {}
+        # 임계값 이벤트 쿨다운: (from, to, threshold) → 마지막 발화 틱
+        self._threshold_cooldown: dict[tuple[str, str, float], int] = {}
 
     # ── 조회 ──────────────────────────
 
@@ -79,9 +81,20 @@ class DiplomacySystem:
         """
         친밀도 delta 조정.
         임계값 통과 시 EventLog 반환, 아니면 None.
+
+        포화 방지:
+          - 이미 BOND(80+) 상태에서 양수 delta는 50% 감쇠
+          - 이미 WAR(-60-) 상태에서 음수 delta는 50% 감쇠
         """
         rec = self._get_or_create(from_id, to_id)
         old_val = rec.value
+
+        # 포화 감쇠: 이미 극단에 가까우면 같은 방향 delta 축소
+        if old_val >= 80.0 and delta > 0:
+            delta *= 0.20   # BOND 이상에서 긍정 효과 80% 감쇠
+        elif old_val <= -60.0 and delta < 0:
+            delta *= 0.20   # WAR 이상에서 부정 효과 80% 감쇠
+
         new_val = max(-100.0, min(100.0, old_val + delta))
         rec.value = new_val
         return self._check_threshold(from_id, to_id, old_val, new_val, tick)
@@ -128,23 +141,33 @@ class DiplomacySystem:
         old: float,
         new: float,
         tick: int,
+        cooldown_ticks: int = 60,
     ) -> EventLog | None:
-        """임계값 통과 여부 확인 → EventLog 반환"""
+        """임계값 통과 여부 확인 → EventLog 반환 (쿨다운 적용)"""
         for threshold, up_event, down_event in _THRESHOLDS:
-            crossed_up   = old <= threshold < new  # 상승해서 통과
-            crossed_down = old > threshold >= new  # 하락해서 통과
+            crossed_up   = old <= threshold < new
+            crossed_down = old > threshold >= new
 
-            if crossed_up or crossed_down:
-                event_type = up_event if crossed_up else down_event
-                desc = _THRESHOLD_DESCRIPTIONS.get(event_type, event_type)
-                return EventLog(
-                    tick=tick,
-                    event_type=event_type,
-                    title=f"[외교] {from_id} → {to_id}: {event_type}",
-                    description=desc,
-                    affected_races=[from_id, to_id],
-                    affinity_changes={f"{from_id}→{to_id}": round(new - old, 2)},
-                )
+            if not (crossed_up or crossed_down):
+                continue
+
+            # 쿨다운 체크: 같은 임계값이 60틱 이내에 이미 발화했으면 무시
+            cd_key = (from_id, to_id, threshold)
+            last_fired = self._threshold_cooldown.get(cd_key, -9999)
+            if tick - last_fired < cooldown_ticks:
+                return None
+
+            self._threshold_cooldown[cd_key] = tick
+            event_type = up_event if crossed_up else down_event
+            desc = _THRESHOLD_DESCRIPTIONS.get(event_type, event_type)
+            return EventLog(
+                tick=tick,
+                event_type=event_type,
+                title=f"[외교] {from_id} → {to_id}: {event_type}",
+                description=desc,
+                affected_races=[from_id, to_id],
+                affinity_changes={f"{from_id}→{to_id}": round(new - old, 2)},
+            )
         return None
 
     # ── 디버그 ────────────────────────

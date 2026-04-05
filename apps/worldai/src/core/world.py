@@ -31,6 +31,7 @@ from src.core.models import (
 )
 from src.core.diplomacy import DiplomacySystem
 from src.core.race_agent import RaceAgent, execute_action
+from src.core.event_system import EventSystem
 
 
 # ── 계절 설정 ───────────────────────────────
@@ -79,6 +80,9 @@ class World:
 
     # 종족별 AI 에이전트 (race_id → RaceAgent)
     _agents: dict[str, RaceAgent] = field(default_factory=dict, repr=False)
+
+    # 세계 이벤트 시스템
+    _event_system: EventSystem = field(default_factory=EventSystem, repr=False)
 
     # ── 프로퍼티 ─────────────────────
 
@@ -177,11 +181,18 @@ class World:
             # 언데드: 자연 번식 없음
             if race.growth_rate <= 1.0:
                 effective_growth = 1.0
-            race.population = min(
-                float(race.max_population),
-                race.population * effective_growth,
-            )
+            # soft cap: max_population을 살짝 넘어갈 수 있음 (overflow 이벤트가 처리)
+            raw_pop = race.population * effective_growth
+            race.population = min(float(race.max_population) * 1.02, raw_pop)
             pop_changes[race.id] = race.population - old_pop
+
+        # 2b. 세계 이벤트 (인구 과밀·습격·몬스터·역병) ─
+        world_events = self._event_system.tick(
+            races=self.races,
+            diplomacy_adjust=self.diplomacy.adjust,
+            tick=self.tick,
+        )
+        events.extend(world_events)
 
         # 3. 외교 자연 감쇠 ────────────────────────
         self.diplomacy.decay_all(decay_rate=0.001)
