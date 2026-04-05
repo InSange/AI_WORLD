@@ -10,6 +10,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Request, HTTPException, Query
 from src.api.schemas import SimulationStatusSchema, TickResultSchema, EventSchema, MessageResponse
 from src.core.models import AffinityLevel
+from src.api.websocket_manager import manager
 
 router = APIRouter()
 
@@ -65,6 +66,15 @@ async def tick_once(req: Request):
         world_map=world.map,
     )
     result.events.extend(faction_events)
+
+    # ── WebSocket 브로드캐스트
+    await manager.broadcast({
+        "type": "UPDATE",
+        "tick": result.tick,
+        "year": result.year,
+        "season": result.season.display(),
+        "events": [e.to_dict() for e in result.events]
+    })
 
     return TickResultSchema(
         tick=result.tick,
@@ -124,6 +134,16 @@ async def run_ticks(
 
     for race in world.active_races:
         pop_snapshots[race.id] = int(race.population)
+
+    # 최근 요약 데이터 전송
+    await manager.broadcast({
+        "type": "SUMMARY",
+        "ran_ticks": ticks,
+        "current_tick": world.tick,
+        "current_year": world.year,
+        "current_season": world.season.display(),
+        "populations": pop_snapshots,
+    })
 
     return {
         "ran_ticks": ticks,

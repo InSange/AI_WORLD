@@ -16,8 +16,9 @@ import sys
 from pathlib import Path
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from src.api.websocket_manager import manager
 
 # 앱 루트를 sys.path에 추가
 _APP_ROOT = Path(__file__).parent.parent.parent  # apps/worldai/
@@ -168,6 +169,43 @@ from src.api.routes import simulation, world, factions  # noqa: E402
 app.include_router(simulation.router, prefix="/simulation", tags=["Simulation"])
 app.include_router(world.router,      prefix="/world",      tags=["World"])
 app.include_router(factions.router,   prefix="/factions",   tags=["Factions"])
+
+
+# ── WebSocket ────────────────────────────────────────
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """
+    실시간 상태 브로드캐스트를 위한 WebSocket 엔드포인트.
+    접속 시 현재 세계 상태 요약을 전송한다.
+    """
+    await manager.connect(websocket)
+    
+    # ── 초기 데이터 전송 (Snapshot)
+    try:
+        from src.api.routes.world import get_world
+        # Request 객체가 없으므로 직접 호출하거나 스키마로 변환
+        # 여기서는 단순화하여 틱 정보만 우선 전송
+        world = websocket.app.state.world
+        await websocket.send_json({
+            "type": "INIT",
+            "tick": world.tick,
+            "year": world.year,
+            "season": world.season.display(),
+            "message": "Connected to WorldAI Simulation"
+        })
+
+        # ── 수신 대기 루프 (연결 유지)
+        while True:
+            # 클라이언트로부터의 메시지는 현재 무시하지만 연결 유지를 위해 필요
+            data = await websocket.receive_text()
+            print(f"📩 WS Received: {data}")
+            
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        print(f"⚠️ WS Error: {e}")
+        manager.disconnect(websocket)
 
 
 # ── 루트 엔드포인트 ──────────────────────────────────

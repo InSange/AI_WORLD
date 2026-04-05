@@ -18,7 +18,7 @@
 | Phase 4.5 | 밸런스 수정 (이벤트 시스템) | ✅ 완료 | #9 |
 | Phase 4.6 | 시간 시스템 모델 (낮/밤·유동인구) | ✅ 완료 | #11 |
 | Phase 4.7 | 영토 기반 인구 & 그리드 시스템 | ✅ 완료 | #12 |
-| Phase 5 | 웹 대시보드 (실시간 시각화) | ⬜ 대기 | - |
+| Phase 5 | 웹 대시보드 (실시간 시각화) | ✅ 완료 | #13 |
 | Phase 6 | CI/CD 구축 | ⬜ 대기 | - |
 | Phase 7 | Plugin SDK | ⬜ 대기 | - |
 
@@ -85,20 +85,22 @@ docs/
 - [x] `configs/worlds/asteria.yaml`: `time_config` 블록 추가 (`default_world.yaml`)
 - [x] `faction_manager.py`: `PopulationSegment` 모델 설계 완료 (구체적 통합은 Phase 5 전후 백로그로 이동)
 
+- [x] 백엔드: WebSocket 매니저 및 틱 브로드캐스트 로직 구현
+- [x] 프론트엔드: Vite + React 대시보드 구축 (MapCanvas, StatsDashboard)
+- [x] 프리미엄 디자인(Dark Mode, Glassmorphism) 적용 완료
+
 ---
 
-## 🔜 Phase 5 — 웹 대시보드
+## 🔜 Phase 6 — CI/CD 구축 (준비 중)
 
 ### 목표
-실시간 세계 시각화 웹 인터페이스.
+GitHub Actions를 이용한 자동화된 워크플로우 구축 전반.
 
 ### 계획
-- WebSocket: 틱마다 자동 갱신
-- 100×80 맵: 종족 영역·파벌 위치 시각화
-- 외교 관계 그래프 (네트워크 다이어그램)
-- 이벤트 피드 (실시간 스크롤)
-- 인구·기술·군사력 시계열 차트
-- 낮/밤 시각화 (맵 밝기 변화)
+- **자동 테스트**: `pytest`를 통한 코어 엔진 및 API 자동 검증
+- **빌드 파이프라인**: 대시보드(Frontend) 정적 빌드 및 배포 자동화
+- **정적 분석**: `flake8`, `mypy`, `eslint`를 통한 코드 품질 관리
+- **도커화**: 전체 시스템(FastAPI + Dashboard) Docker 컨테이너화 고려
 
 ---
 
@@ -156,23 +158,23 @@ GET  /player/grid-view         - 반경 N타일 현황
 
 ```
 [Antigravity → 다음 작업자]
-Phase 4.7까지 완료. 그리드 맵(100x80) 및 영토 기반 인구 시스템(Segmentation) 구축 완료.
-서버 정상 동작 및 API 응답(GET /world/map 등) 확인됨.
+Phase 5까지 완료. 실시간 웹 대시보드가 성공적으로 구축되어 WebSocket 통신이 가능함.
+현재 100x80 그리드 맵과 인구/이벤트 실시간 피드가 시각적으로 표현됨.
 
 서버 실행:
   cd apps/worldai
-  py -m uvicorn src.api.main:app --port 8000 --reload
+  python -m uvicorn src.api.main:app --reload --port 8000
+  (별도 터미널) cd dashboard && npm run dev
 
-다음 구현 순서 (Phase 5):
-  1. FastAPI WebSocket 엔드포인트 구축
-  2. 대시보드 프론트엔드 (React+TS) 스켈레톤 생성
-  3. 실시간 맵 렌더링 (Canvas/SVG 기반)
-  4. 인구 이동/이벤트 실시간 피드 시각화
+다음 구현 순서 (Phase 6):
+  1. GitHub Actions 워크플로우 설정 (.github/workflows/)
+  2. 코어 로직의 단위 테스트(Pytest) 대폭 보강
+  3. 프론트엔드 E2E 테스트 또는 빌드 자동화
+  4. Docker Compose를 통한 원클릭 배포 환경 구축
 
-핵심 설계:
-  - 인구는 Faction 산하의 PopulationSegment 합계로 자동 계산됨 (RaceState.population은 프로퍼티)
-  - 1틱 = 1시간, 1틱당 1타일 이동 규칙 적용 중
-  - GET /world/map 응답의 'data' 리스트는 8000개 타일의 지형 인덱스임
+핵심 포인트:
+  - 대시보드는 `apps/worldai/dashboard/`에 위치함
+  - 브로드캐스트 데이터 구조는 `src/api/websocket_manager.py`를 따름
   
-docs/time_system.md 및 docs/milestones/ 관련 파일 참고 필수.
+docs/milestones/ 및 phase_5_dashboard.md 참고 필수.
 ```

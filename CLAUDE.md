@@ -20,6 +20,7 @@
 2. `harness/core/workflows/pipeline.md` — 작업 파이프라인
 3. `apps/worldai/harness/docs/index.md` — 앱 문서 진입점
 4. `apps/worldai/harness/plans/tracker.md` — 현재 Phase 상태
+5. `apps/worldai/harness/plans/phase_5_dashboard.md` — Phase 5 상세 계획
 
 ---
 

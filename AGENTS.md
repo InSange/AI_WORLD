@@ -8,6 +8,16 @@
 2. `harness/core/workflows/pipeline.md` — 작업 파이프라인
 3. `apps/worldai/harness/docs/index.md` — 앱 문서 진입점
 4. `apps/worldai/harness/plans/tracker.md` — 현재 Phase 상태
+5. `apps/worldai/harness/plans/phase_5_dashboard.md` — Phase 5 상세 계획
+
+## Documentation Map
+타 모델이 프로젝트를 파악할 때 다음 문서들을 순서대로 참고하시오:
+- [AGENTS.md](file:///c:/Users/선우/source/repos/WorldAI/AGENTS.md): 에이전트 작업 가이드 및 진입점
+- [CLAUDE.md](file:///c:/Users/선우/source/repos/WorldAI/CLAUDE.md): 아키텍처 원칙 및 헌법
+- [apps/worldai/harness/plans/tracker.md](file:///c:/Users/선우/source/repos/WorldAI/apps/worldai/harness/plans/tracker.md): 시뮬레이션 개발 단계 및 상태 트래커
+- [apps/worldai/harness/plans/phase_5_dashboard.md](file:///c:/Users/선우/source/repos/WorldAI/apps/worldai/harness/plans/phase_5_dashboard.md): Phase 5 진행 계획 및 설계 (현재 진행 중)
+- [docs/](file:///c:/Users/선우/source/repos/WorldAI/docs/): 기획 및 기술 명세서 모음 (인구, 외교, 종교 등)
+- [docs/milestones/](file:///c:/Users/선우/source/repos/WorldAI/docs/milestones/): 완료된 주요 단계별 상세 리포트
 
 ## Current App
 - 기본 작업 대상: `apps/worldai/`
