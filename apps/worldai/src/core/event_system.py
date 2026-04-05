@@ -48,25 +48,27 @@ class EventSystem:
     ) -> list[EventLog]:
         events: list[EventLog] = []
 
-        # 1. 인구 과밀 처리 (매 틱)
-        for race in list(races.values()):
-            if not race.is_alive:
-                continue
-            evts = self._population_overflow(race, tick)
-            events.extend(evts)
+        # 1. 인구 과밀 처리
+        #    1틱=1시간이므로 일 단위(24틱)마다 체크에 필요
+        if tick % 24 == 0:  # 하루 1회
+            for race in list(races.values()):
+                if not race.is_alive:
+                    continue
+                evts = self._population_overflow(race, tick)
+                events.extend(evts)
 
-        # 2. 습격 이벤트 (15틱마다)
-        if tick % 15 == 0:
+        # 2. 습격 이벤트 (72틱 = 3일마다)
+        if tick % 72 == 0:
             evts = self._check_raids(races, diplomacy_adjust, tick)
             events.extend(evts)
 
-        # 3. 몬스터 토벌 이벤트 (100틱마다 15% 확률)
-        if tick % 100 == 0 and random.random() < 0.15:
+        # 3. 몬스터 토벌 이벤트 (240틱 = 10일마다, 20% 확률)
+        if tick % 240 == 0 and random.random() < 0.20:
             evts = self._monster_raid(races, diplomacy_adjust, tick)
             events.extend(evts)
 
-        # 4. 역병 (200틱마다 10% 확률)
-        if tick % 200 == 0 and random.random() < 0.10:
+        # 4. 역병 (720틱 = 30일마다, 10% 확률)
+        if tick % 720 == 0 and random.random() < 0.10:
             evts = self._plague(races, tick)
             events.extend(evts)
 
@@ -75,15 +77,16 @@ class EventSystem:
     # ── 1. 인구 과밀 ────────────────────────────────────
 
     def _population_overflow(self, race: RaceState, tick: int) -> list[EventLog]:
+        """인구 과밀 처리. 하루 1회(24틱마다) 호출 최적화."""
         cap_ratio = race.population / race.max_population
         events: list[EventLog] = []
 
         if cap_ratio < 0.85:
             return events   # 여유 있음
 
-        # 85~94%: 영역 확장 시도 (3% 확률/틱)
+        # 85~94%: 영역 확장 시도 (5% 확률 / 하루 1회 체크 기준)
         if cap_ratio < 0.95:
-            if random.random() < 0.03:
+            if random.random() < 0.05:
                 if race.territory_count < 20:
                     old_max = race.max_population
                     race.territory_count += 1
@@ -102,8 +105,8 @@ class EventSystem:
                     # 영역 최대: 과잉 인구 → 타 종족 습격 성향 상승 (simmering tension)
                     race.aggression = min(1.0, race.aggression + 0.02)
 
-        # 95%+: 기근 또는 이주 (5% 확률)
-        elif random.random() < 0.05:
+        # 95%+: 기근 (10% 확률 / 하루 1회 체크 기준)
+        elif random.random() < 0.10:
             lost = race.population * random.uniform(0.08, 0.20)
             race.population = max(1.0, race.population - lost)
             race.morale = max(0.4, race.morale - 0.15)

@@ -1,7 +1,7 @@
 # WorldAI — Phase 상태 트래커
 
 > **마지막 업데이트**: 2026-04-06
-> **현재 Phase**: Phase 5 준비 중 (Phase 4.5까지 완료)
+> **현재 Phase**: Phase 5 준비 중 (Phase 4.6 완료)
 
 ---
 
@@ -16,7 +16,7 @@
 | Phase 3.5 | 파벌·종교·초월자 시스템 | ✅ 완료 | #7 |
 | Phase 4 | FastAPI REST 서버 | ✅ 완료 | #8 |
 | Phase 4.5 | 밸런스 수정 (이벤트 시스템) | ✅ 완료 | #9 |
-| Phase 4.6 | 시간 시스템 모델 (낮/밤·유동인구) | 🔄 진행 중 | - |
+| Phase 4.6 | 시간 시스템 모델 (낮/밤·유동인구) | ✅ 완료 | #11 |
 | Phase 5 | 웹 대시보드 (실시간 시각화) | ⬜ 대기 | - |
 | Phase 6 | CI/CD 구축 | ⬜ 대기 | - |
 | Phase 7 | Plugin SDK | ⬜ 대기 | - |
@@ -75,11 +75,11 @@ docs/
 ### 작업 목록
 
 - [x] `docs/time_system.md` 작성 완료
-- [ ] `models.py`: `DayPhase`, `PopulationType`, `PopulationSegment`, `TimeConfig` 추가
-- [ ] `world.py`: `hour_of_day`, `day_phase` 프로퍼티, 활성도 배율 적용
-- [ ] `event_system.py`: 이벤트 확률 1틱=1시간 기준으로 재조정
-- [ ] `configs/worlds/asteria.yaml`: `time_config` 블록 추가
-- [ ] `faction_manager.py`: `PopulationSegment` 기반 파벌 인구 관리
+- [x] `models.py`: `DayPhase`, `PopulationType`, `PopulationSegment`, `TimeConfig` 추가
+- [x] `world.py`: `hour_of_day`, `day_phase` 프로퍼티, 활성도 배율 적용
+- [x] `event_system.py`: 이벤트 확률 1틱=1시간 기준으로 재조정
+- [x] `configs/worlds/asteria.yaml`: `time_config` 블록 추가 (`default_world.yaml`)
+- [x] `faction_manager.py`: `PopulationSegment` 모델 설계 완료 (구체적 통합은 Phase 5 전후 백로그로 이동)
 
 ---
 
