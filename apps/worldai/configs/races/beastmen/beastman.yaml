@@ -1,0 +1,67 @@
+id: beastman
+name: 수인 (견족/묘족 등)
+name_en: Beastman
+category: beastmen
+tier: 1
+description: >
+  동물과 인간의 특징을 혼합한 종족.
+  견족(늑대 기반), 묘족(고양이 기반), 웅족(곰 기반) 등 다양한
+  하위 부족이 존재한다. 부족 단위로 이동하며 야생 본능을 따른다.
+
+stats:
+  max_population: 6000
+  growth_rate: 1.009
+  military_strength: 70
+  magic_affinity: 25
+  technology_level: 35
+  adaptability: 80          # 야생 환경 적응 우수
+  lifespan: 25920           # 인간과 비슷
+
+sub_tribes:
+  - id: wolf_tribe
+    name: 견족 (늑대)
+    bonus: "군집 사냥 효율 +30%, 추적 능력 최고"
+  - id: cat_tribe
+    name: 묘족 (고양이)
+    bonus: "은신 및 기습 공격 +25%, 야간 전투 페널티 없음"
+  - id: bear_tribe
+    name: 웅족 (곰)
+    bonus: "근접 전투력 +20%, HP +40%"
+
+special_traits:
+  - id: pack_hunting
+    name: "무리 사냥"
+    description: "3개 이상 군집 시 전투력 +25%. 기습 공격 성공률 2배"
+
+  - id: wild_instinct
+    name: "야생의 본능"
+    description: "적의 이동 방향 사전 감지 (정찰). 함정 탐지 +40%. 매복 성공 시 선제 공격권 획득"
+
+behavior:
+  aggression: 0.55
+  expansion_drive: 0.50     # 사냥터 확보가 목적
+  alliance_tendency: 0.40
+  trade_focus: 0.30
+  isolationism: 0.30
+
+diplomacy_trait:
+  trust_rate: 0.90
+  grudge_rate: 1.00
+  memory_duration: 250
+  betrayal_penalty: 30
+
+diplomacy_defaults:
+  - target: human
+    affinity: 10
+  - target: elf
+    affinity: 20            # 자연 공유
+  - target: orc
+    affinity: 25            # 힘의 종족 연대
+  - target: fairy
+    affinity: 15
+  - target: halfling
+    affinity: 20
+  - target: undead
+    affinity: -35
+  - target: golem
+    affinity: -15           # 인공 생명체 본능적 거부감

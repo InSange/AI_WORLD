@@ -1,0 +1,69 @@
+id: elf
+name: 엘프
+name_en: Elf
+category: humanoid
+tier: 2
+description: >
+  장수하며 마법과 자연에 친숙한 종족. 수천 년을 살아 깊은 지혜를 가지지만
+  변화와 외부 세계에 극도로 폐쇄적이다. 인간의 빠른 팽창을 자연에 대한
+  위협으로 인식하며 경계한다. 인간에게 먼저 손 내밀지 않는다.
+
+stats:
+  max_population: 3000
+  growth_rate: 1.002        # 출생률 매우 낮음
+  military_strength: 65
+  magic_affinity: 90
+  technology_level: 55
+  adaptability: 50          # 숲 외 지형 불편
+  lifespan: 1080000         # ~3000년
+
+special_traits:
+  - id: longevity_wisdom
+    name: "장수의 지혜"
+    description: "매 1000틱마다 고대 비전 지식 발견. 마법 연구 속도 +30%"
+
+  - id: nature_bond
+    name: "자연과의 유대"
+    description: "숲 지형에서 방어력 +30%, 이동 패널티 없음. 숲 벌목 발생 시 인접 종족 친밀도 -15 자동 적용"
+
+  - id: isolationist
+    name: "폐쇄적 고립주의"
+    description: >
+      외부 종족이 숲 영역 진입 시 즉각 경보 발령.
+      외부 종족의 외교 접촉 이벤트 수락률 -40%.
+      홀로 있을 때 마법 연구 효율 +20%.
+
+behavior:
+  aggression: 0.25          # 선제 공격 거의 없음. 영역 침범 시에만 강하게 반응
+  expansion_drive: 0.10     # 영토 유지만. 확장 거의 없음
+  alliance_tendency: 0.20   # 동맹 극도로 꺼림. 공동의 적이 있어야만 협력
+  trade_focus: 0.30
+  isolationism: 0.90
+
+diplomacy_trait:
+  trust_rate: 0.50          # 신뢰 쌓기 매우 느림 (수백 년 걸림)
+  grudge_rate: 1.80         # 원한 매우 빠르게 쌓임
+  memory_duration: 1200     # 수천 년도 기억 (장수 종족)
+  betrayal_penalty: 60      # 배신 시 관계 회복 거의 불가
+
+diplomacy_defaults:
+  - target: human
+    affinity: -20           # 경계. 인간의 팽창과 자연 훼손이 위협
+  - target: fairy
+    affinity: 70            # 같은 자연 존재. 유일하게 진심으로 우호적
+  - target: beastman
+    affinity: 20            # 숲을 공유하는 수인은 그나마 허용
+  - target: dwarf
+    affinity: -5            # 채굴로 인한 자연 파괴. 달갑지 않음
+  - target: halfling
+    affinity: 30            # 조용하고 자연 해치지 않음
+  - target: orc
+    affinity: -60
+  - target: dragon
+    affinity: 10            # 고대 존재에 대한 경외
+  - target: undead
+    affinity: -70
+  - target: angel_demon
+    affinity: 15
+  - target: elemental
+    affinity: 55            # 자연의 정령을 동류로 여김

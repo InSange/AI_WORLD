@@ -1,0 +1,72 @@
+id: golem
+name: 골렘 / 기계 종족
+name_en: Golem / Construct
+category: others
+tier: 2
+description: >
+  마법이나 기술로 만들어진 인공 생명체.
+  초기에는 창조자 종족(보통 드워프 또는 인간)의 목적에 따라 행동하지만
+  오랜 시간이 지나면 자아를 획득하여 독립 세력이 될 수 있다.
+
+stats:
+  max_population: 800       # 제작에 자원 필요
+  growth_rate: 1.0          # 자연 번식 없음. 제작으로만 증가
+  military_strength: 85
+  magic_affinity: 30
+  technology_level: 60
+  adaptability: 50
+  lifespan: 9999999         # 유지보수만 되면 영구
+
+sub_types:
+  - id: war_golem
+    name: 전투 골렘
+    description: "전투 특화. 군사력 +20%. 군사 목적으로 제작"
+  - id: work_golem
+    name: 노동 골렘
+    description: "자원 생산 +30%. 광업·건설 특화"
+  - id: arcane_golem
+    name: 마법 골렘
+    description: "마법 공격 가능. 마법 친화도 +30%. 희귀"
+
+special_traits:
+  - id: no_needs
+    name: "무욕"
+    description: "식량 소비 없음. 기근·역병·기후 이벤트 완전 면역"
+
+  - id: upgrade_system
+    name: "업그레이드 가능"
+    description: "기술 연구 완료 시 기존 개체 성능 향상 적용. 성능 하한 없이 지속 강화 가능"
+
+  - id: creator_bond
+    name: "창조자 유대"
+    description: >
+      최초 창조한 종족과의 친밀도는 항상 +20 보정.
+      자아 획득(1000틱 이상 자율 행동) 시 이 보정 사라지고
+      독립 세력으로 행동 시작.
+
+behavior:
+  aggression: 0.30          # 명령받지 않으면 공격하지 않음
+  expansion_drive: 0.25
+  alliance_tendency: 0.45
+  trade_focus: 0.55         # 희귀 광물, 마법석 교환에 관심
+  isolationism: 0.35
+
+diplomacy_trait:
+  trust_rate: 0.85
+  grudge_rate: 0.70
+  memory_duration: 9999999  # 영구 기억 (기계 특성)
+  betrayal_penalty: 40
+
+diplomacy_defaults:
+  - target: dwarf
+    affinity: 30            # 창조자 계열
+  - target: human
+    affinity: 20
+  - target: elemental
+    affinity: -20           # 자연 vs 인공
+  - target: fairy
+    affinity: -10
+  - target: undead
+    affinity: -30           # 생명을 왜곡하는 존재를 기피
+  - target: dragon
+    affinity: 15            # 고대의 힘에 대한 계산적 존중

@@ -1,0 +1,62 @@
+id: orc
+name: 오크 (Orc 계열)
+name_en: Orc
+category: humanoid
+tier: 1
+description: >
+  강력한 육체와 빠른 번식력을 지닌, 엘프와 대조되는 종족.
+  하위 부족: 오크(전투 특화), 고블린(수 특화, growth_rate 최고), 트롤(재생 특화).
+  우두머리의 카리스마에 따라 통일 국가가 되기도 하고 분열 부족이 되기도 한다.
+
+stats:
+  max_population: 8000
+  growth_rate: 1.012        # 빠른 번식 (번식력이 강점)
+  military_strength: 80
+  magic_affinity: 10
+  technology_level: 25      # 기술 낮음 — 약탈로 보완
+  adaptability: 60
+  lifespan: 18000           # ~50년 (수명 짧음)
+
+special_traits:
+  - id: berserker_rage
+    name: "광전사의 분노"
+    description: "HP 30% 이하 시 공격력 +50%. 패배 직전에 오히려 강해짐"
+
+  - id: horde_tactics
+    name: "군집 전술"
+    description: "같은 군집 내 유닛 수가 많을수록 전투력 보정. 100명 이상 시 +15%, 500명 이상 시 +30%"
+
+  - id: plunder_economy
+    name: "약탈 경제"
+    description: "적 영토 공격 성공 시 자원 60% 탈취. 자체 생산 대신 약탈이 주 경제 방식"
+
+behavior:
+  aggression: 0.80          # 매우 공격적
+  expansion_drive: 0.70
+  alliance_tendency: 0.25   # 힘으로 굴복시키지 않으면 동맹 안 맺음
+  trade_focus: 0.20
+  isolationism: 0.10
+
+diplomacy_trait:
+  trust_rate: 1.20          # 힘을 보여주면 빠르게 인정
+  grudge_rate: 0.80         # 원한은 비교적 짧음 (지금 이길 수 있으면 됨)
+  memory_duration: 150
+  betrayal_penalty: 20
+
+diplomacy_defaults:
+  - target: elf
+    affinity: -60
+  - target: dwarf
+    affinity: -50           # 광산 전쟁
+  - target: human
+    affinity: -20
+  - target: halfling
+    affinity: -10           # 약하지만 먹을 것도 없어 그냥 무시
+  - target: beastman
+    affinity: 25            # 힘의 종족끼리 연대
+  - target: troll
+    affinity: 30
+  - target: goblin
+    affinity: 40            # 같은 계열 부족
+  - target: undead
+    affinity: -20           # 죽은 자를 경멸

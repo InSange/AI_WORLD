@@ -1,0 +1,64 @@
+id: dragon
+name: 드래곤
+name_en: Dragon
+category: mythic
+tier: 3
+description: >
+  판타지 세계의 정점에 서 있는 강력한 파충류형 생물.
+  개체 수는 극소수지만 압도적인 전투력과 마법 능력으로 대륙에 군림한다.
+  영역 기반으로 생활하며, 영역이 침범되지 않으면 먼저 공격하지 않는다.
+  단, 각성하면 주변 종족 모두가 위기를 맞는다.
+
+stats:
+  max_population: 200       # 극소수
+  growth_rate: 1.0005       # 매우 느린 번식
+  military_strength: 100    # 개체 최강
+  magic_affinity: 95
+  technology_level: 40      # 기술보다 본능과 마법
+  adaptability: 85
+  lifespan: 3600000         # ~10000년
+
+special_traits:
+  - id: apex_predator
+    name: "대륙의 정점"
+    description: "드래곤 존재만으로 주변 지역 종족 사기 -15%. 어떤 종족도 단독 개체를 무시할 수 없음"
+
+  - id: dragon_flame
+    name: "드래곤 불꽃"
+    description: "전투 시 광역 화염 공격. 방어 무시. 도시/건물 파괴 가능. 쿨타임: 30틱"
+
+  - id: ancient_memory
+    name: "고대의 기억"
+    description: "세계 모든 고대 유적 위치 파악. 협상 시 정보 제공을 대가로 조공 요구 가능"
+
+  - id: awakening
+    name: "각성"
+    description: >
+      평소엔 잠들어 있음. 영역 3회 이상 침범 시 각성.
+      각성 후 10틱간 주변 2타일 내 모든 종족 공격 시작.
+      각성 이벤트는 전 종족에게 공지됨.
+
+behavior:
+  aggression: 0.40          # 영역 외에서는 비공격적
+  expansion_drive: 0.20     # 영역 유지만 중요
+  alliance_tendency: 0.15   # 동맹 거의 안 함. 조공 받는 구조 선호
+  trade_focus: 0.10
+  isolationism: 0.75
+
+diplomacy_trait:
+  trust_rate: 0.30          # 신뢰 쌓기 극히 어려움
+  grudge_rate: 2.0          # 영역 침범에 즉각적 분노
+  memory_duration: 2000     # 영원히 기억
+  betrayal_penalty: 80
+
+diplomacy_defaults:
+  - target: human
+    affinity: -10           # 약소 종족, 다만 조공 가능성 있음
+  - target: elf
+    affinity: 15            # 고대 존재끼리 서로 인정
+  - target: undead
+    affinity: -40           # 죽음의 기운을 혐오
+  - target: angel_demon
+    affinity: -20           # 초월 존재끼리의 긴장
+  - target: elemental
+    affinity: 20            # 자연 원소와 친화성

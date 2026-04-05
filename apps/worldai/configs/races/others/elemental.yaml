@@ -1,0 +1,70 @@
+id: elemental
+name: 정령 (4원소)
+name_en: Elemental Spirit
+category: others
+tier: 2
+description: >
+  불, 물, 땅, 바람의 원소를 다루는 존재.
+  특정 자연 환경에 귀속되어 자신의 원소 지형에서 막강하지만
+  다른 지형에서는 힘을 잃는다. 소멸해도 원소 에너지로 재탄생한다.
+
+stats:
+  max_population: 1000
+  growth_rate: 1.002
+  military_strength: 65
+  magic_affinity: 100
+  technology_level: 0       # 기술 개념 없음
+  adaptability: 30          # 자신의 원소 지형에서만 강함
+  lifespan: 9999999         # 원소 소멸 시 재탄생
+
+sub_types:
+  - id: fire_spirit
+    name: 화염 정령
+    terrain: volcano_desert
+    description: "공격력 최강. 화염 지대에서 전투력 +40%. 물에 취약"
+  - id: water_spirit
+    name: 물 정령
+    terrain: ocean_river
+    description: "재생력 최고. 수중 자유 이동. 화염에 취약"
+  - id: earth_spirit
+    name: 대지 정령
+    terrain: mountain_forest
+    description: "방어력 최고. 산악·숲에서 전투력 +40%. 바람에 취약"
+  - id: wind_spirit
+    name: 바람 정령
+    terrain: plains_sky
+    description: "이동력 최고. 평원에서 2배 이동. 대지에 취약"
+
+special_traits:
+  - id: elemental_mastery
+    name: "원소 지배"
+    description: "자신 원소 지형에서 전투력 +40%, 이동 패널티 없음. 다른 원소 지형에서 -30%"
+
+  - id: rebirth_cycle
+    name: "재탄생 순환"
+    description: "전투에서 소멸해도 해당 원소 에너지 밀집 지역에서 50틱 후 재탄생"
+
+  - id: nature_amplifier
+    name: "자연 증폭"
+    description: "엘프·페어리와 동맹 시 주변 자연 지형의 자원 생산 +20%"
+
+behavior:
+  aggression: 0.35
+  expansion_drive: 0.25     # 원소 지형 수호가 목적
+  alliance_tendency: 0.55
+  trade_focus: 0.15         # 자원보다 원소 에너지 교환
+  isolationism: 0.40
+
+diplomacy_defaults:
+  - target: fairy
+    affinity: 60
+  - target: elf
+    affinity: 55            # 자연 연대
+  - target: beastman
+    affinity: 25
+  - target: golem
+    affinity: -20           # 자연 vs 인공
+  - target: undead
+    affinity: -60
+  - target: dragon
+    affinity: 30            # 고대 원소력 공유

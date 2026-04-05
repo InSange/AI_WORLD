@@ -1,0 +1,60 @@
+id: halfling
+name: 하플링
+name_en: Halfling
+category: humanoid
+tier: 1
+description: >
+  드워프보다 작고 조용한 생활을 좋아하는 종족.
+  전투를 꺼리고 평화를 추구하지만 은신과 기민함은 타의 추종을 불허한다.
+  어디서나 잘 적응하고, 모든 종족에게 큰 위협이 되지 않아 친밀도가 높은 편.
+
+stats:
+  max_population: 4000
+  growth_rate: 1.006
+  military_strength: 30     # 낮은 전투력 — 직접 전투 회피
+  magic_affinity: 20
+  technology_level: 45
+  adaptability: 75
+  lifespan: 64800           # ~180년
+
+special_traits:
+  - id: stealth_master
+    name: "은신의 달인"
+    description: "평원·숲 지형에서 적에게 탐지되지 않음. 정찰 및 정보 수집 능력 +50%"
+
+  - id: lucky_feet
+    name: "행운의 발"
+    description: "부정적 이벤트 발생 확률 -20%. 교역 협상 성공률 +15%. 전투 시 회피율 +10%"
+
+  - id: peaceful_aura
+    name: "평화의 기운"
+    description: "하플링이 존재하는 지역은 무작위 전쟁 이벤트 발생 확률 -10%"
+
+behavior:
+  aggression: 0.10          # 거의 공격하지 않음
+  expansion_drive: 0.15     # 작은 공동체 유지 중심
+  alliance_tendency: 0.80   # 동맹 강하게 선호
+  trade_focus: 0.75
+  isolationism: 0.10
+
+diplomacy_trait:
+  trust_rate: 1.30          # 신뢰 빨리 쌓임 (위협적이지 않아서)
+  grudge_rate: 0.60         # 원한 잘 안 쌓음
+  memory_duration: 180
+  betrayal_penalty: 25      # 배신당하면 꽤 상처받음
+
+diplomacy_defaults:
+  - target: human
+    affinity: 50
+  - target: elf
+    affinity: 40
+  - target: dwarf
+    affinity: 40
+  - target: orc
+    affinity: -30           # 무섭지만 먼저 공격하진 않음
+  - target: beastman
+    affinity: 20
+  - target: fairy
+    affinity: 45
+  - target: undead
+    affinity: -40

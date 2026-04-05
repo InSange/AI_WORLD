@@ -1,0 +1,72 @@
+id: undead
+name: 언데드 (뱀파이어·리치·좀비)
+name_en: Undead
+category: mythic
+tier: 2
+description: >
+  죽음에서 깨어난 존재들. 뱀파이어(지성형 지도자), 리치(마법형 지도자),
+  좀비(군집 병력)로 구성. 전투에서 죽은 적을 아군으로 편입시키는 독특한
+  인구 증가 메커니즘을 가진다.
+
+stats:
+  max_population: 4000
+  growth_rate: 1.0          # 자연 증식 없음. 전투 사망자 흡수로만 증가
+  military_strength: 70
+  magic_affinity: 75
+  technology_level: 20
+  adaptability: 70
+  lifespan: 9999999         # 이론상 불멸
+
+sub_types:
+  - id: vampire
+    name: 뱀파이어
+    role: leader
+    description: "지성형 지도자. 외교 가능. 흡혈로 체력 회복. 빛 약점"
+  - id: lich
+    name: 리치
+    role: mage
+    description: "마법 특화. 군중 저주 마법. 철갑 내성. 물리 공격 취약"
+  - id: zombie
+    name: 좀비
+    role: soldier
+    description: "군집 병력. 개체 약하지만 숫자로 압도. 역병 전파"
+
+special_traits:
+  - id: death_harvest
+    name: "죽음의 수확"
+    description: "전투에서 적 유닛 사망 시 25% 확률로 아군 언데드로 부활. 전쟁이 길수록 강해짐"
+
+  - id: plague_aura
+    name: "역병의 기운"
+    description: "주변 지역에 틱마다 역병 서서히 전파. 인접 종족 성장률 -10%, 군사력 -5%"
+
+  - id: undying
+    name: "불사"
+    description: "기근, 역병, 기후 이벤트 완전 면역. 식량 자원 불필요"
+
+behavior:
+  aggression: 0.70
+  expansion_drive: 0.60     # 더 많은 시체가 필요 → 전투 선호
+  alliance_tendency: 0.15
+  trade_focus: 0.05         # 교역 거의 없음. 약탈이 전부
+  isolationism: 0.60
+
+diplomacy_trait:
+  trust_rate: 0.40
+  grudge_rate: 1.50
+  memory_duration: 999999   # 불멸이라 영원히 기억
+  betrayal_penalty: 50
+
+diplomacy_defaults:
+  - target: angel_demon
+    affinity: -100          # 천사와는 절대 적대 (세계관 대립 축)
+  - target: demon
+    affinity: 20            # 어둠 계열 연대
+  - target: human
+    affinity: -50           # 먹잇감
+  - target: elf
+    affinity: -70           # 생명 에너지의 정수 — 표적
+  - target: dragon
+    affinity: -40
+  - target: fairy
+    affinity: -80           # 순수한 생명력 심각한 위협

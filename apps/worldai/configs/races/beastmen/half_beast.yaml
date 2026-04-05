@@ -1,0 +1,65 @@
+id: half_beast
+name: 반인반수 (켄타우로스·하피·라미아)
+name_en: Half-Beast
+category: beastmen
+tier: 2
+description: >
+  켄타우로스(상반신 인간+하반신 말), 하피(인간+새), 라미아(인간+뱀) 등
+  신화적 기반의 종족. 희귀하고 강력하며 각각의 지형 특화 능력이 뛰어나다.
+
+stats:
+  max_population: 1500      # 희귀종
+  growth_rate: 1.003
+  military_strength: 75
+  magic_affinity: 40
+  technology_level: 30
+  adaptability: 65
+  lifespan: 108000          # ~300년
+
+sub_types:
+  - id: centaur
+    name: 켄타우로스
+    terrain_bonus: plains
+    description: "평원 이동력 2배. 기마 돌격 공격력 +35%"
+  - id: harpy
+    name: 하피
+    terrain_bonus: mountain
+    description: "비행 이동. 산악 지형 자유롭게 이동. 기습 공격 유리"
+  - id: lamia
+    name: 라미아
+    terrain_bonus: desert_water
+    description: "사막·수중 이동 패널티 없음. 독 공격 보유"
+
+special_traits:
+  - id: mythic_form
+    name: "신화의 형태"
+    description: "전투 시작 전 적 유닛 사기 -20% (공포 효과)"
+
+  - id: terrain_mastery
+    name: "지형 정복"
+    description: "각 서브 타입에 따라 특화 지형에서 전투력 +30%, 이동 패널티 없음"
+
+behavior:
+  aggression: 0.45
+  expansion_drive: 0.35
+  alliance_tendency: 0.35
+  trade_focus: 0.25
+  isolationism: 0.50        # 반인반수는 일반 종족에게 이질적 존재
+
+diplomacy_trait:
+  trust_rate: 0.75
+  grudge_rate: 1.10
+  memory_duration: 350
+  betrayal_penalty: 28
+
+diplomacy_defaults:
+  - target: beastman
+    affinity: 40            # 같은 수인 계열
+  - target: elf
+    affinity: 25
+  - target: human
+    affinity: 0             # 중립 (인간은 반인반수를 두려워하거나 신기하게 봄)
+  - target: fairy
+    affinity: 20
+  - target: undead
+    affinity: -30

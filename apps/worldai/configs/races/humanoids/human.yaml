@@ -1,0 +1,58 @@
+id: human
+name: 인간
+name_en: Human
+category: humanoid
+tier: 1
+description: >
+  가장 보편적이며 다양한 환경에 적응하는 능력을 지닌 종족.
+  마법이나 육체적 능력보다는 조직력과 기술로 대륙 패권을 노린다.
+  빠른 것 같아 보이지만 초반엔 타 종족 대비 크게 앞서지 않는다.
+
+stats:
+  max_population: 10000
+  growth_rate: 1.005        # 보통 번식 — 압도적 우위 방지
+  military_strength: 60
+  magic_affinity: 30
+  technology_level: 65      # 기술 중상위권, 시간 지나면서 올라감
+  adaptability: 95
+  lifespan: 25920           # ~72년 (360틱/년)
+
+special_traits:
+  - id: adaptability_bonus
+    name: "만능 적응"
+    description: "모든 지형에서 이동/전투 패널티 없음. 다른 종족과 협력 시 시너지 +10%"
+
+  - id: tech_research
+    name: "기술 혁신"
+    description: "기술 연구 속도 +15%. 매 150틱마다 소규모 기술 이벤트 발생. 초반 급성장 방지를 위해 첫 300틱은 효과 절반"
+
+behavior:
+  aggression: 0.40
+  expansion_drive: 0.60     # 중간 수준 확장 욕구
+  alliance_tendency: 0.65
+  trade_focus: 0.70
+  isolationism: 0.10        # 개방적
+
+diplomacy_trait:
+  trust_rate: 1.0
+  grudge_rate: 0.9
+  memory_duration: 200      # 비교적 짧은 기억
+  betrayal_penalty: 15
+
+diplomacy_defaults:
+  - target: elf
+    affinity: 10            # 동경하지만 상대가 경계
+  - target: dwarf
+    affinity: 40
+  - target: halfling
+    affinity: 50
+  - target: orc
+    affinity: -20
+  - target: beastman
+    affinity: 5
+  - target: undead
+    affinity: -50
+  - target: angel_demon
+    affinity: 20
+  - target: golem
+    affinity: 15

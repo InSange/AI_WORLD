@@ -1,0 +1,62 @@
+id: fairy
+name: 페어리 / 요정
+name_en: Fairy
+category: beastmen
+tier: 2
+description: >
+  작은 몸집과 마법 능력을 지닌 정령 같은 존재.
+  직접 전투보다 지원·방해·외교에 특화되어 있으며,
+  자연 환경과 깊이 연결된다. 어디서나 생존하지만 전쟁을 극도로 꺼린다.
+
+stats:
+  max_population: 2000
+  growth_rate: 1.004
+  military_strength: 15     # 전투력 매우 낮음
+  magic_affinity: 85
+  technology_level: 10
+  adaptability: 90
+  lifespan: 360000          # ~1000년
+
+special_traits:
+  - id: pixie_dust
+    name: "요정 가루"
+    description: "아군 종족에 버프 제공 — 성장률 +5%, 행운 이벤트 발생 +10%. 전투 지원 특화"
+
+  - id: mind_trick
+    name: "마음의 장난"
+    description: "적 종족의 외교 판단을 교란. 임박한 전쟁 이벤트 발생 확률 -20%. 협상 성공률 조작 가능"
+
+  - id: invisibility
+    name: "불가시"
+    description: "전투 외 상황에서 타 종족에게 탐지되지 않음. 정보 수집 최강"
+
+behavior:
+  aggression: 0.05          # 거의 공격 없음
+  expansion_drive: 0.10
+  alliance_tendency: 0.75   # 강한 종족과의 동맹을 적극 원함 (보호 목적)
+  trade_focus: 0.60
+  isolationism: 0.20
+
+diplomacy_trait:
+  trust_rate: 1.40          # 빠르게 친해짐 (귀엽고 위협적이지 않음)
+  grudge_rate: 0.50
+  memory_duration: 600      # 오래 기억하지만 원한보다는 우정
+  betrayal_penalty: 20
+
+diplomacy_defaults:
+  - target: elf
+    affinity: 70
+  - target: elemental
+    affinity: 60
+  - target: beastman
+    affinity: 30
+  - target: halfling
+    affinity: 45
+  - target: human
+    affinity: 15            # 인간에게 호기심 있음
+  - target: undead
+    affinity: -80
+  - target: demon
+    affinity: -70
+  - target: dragon
+    affinity: 5             # 경외하지만 두려움

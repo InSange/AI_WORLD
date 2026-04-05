@@ -1,0 +1,63 @@
+id: dwarf
+name: 드워프
+name_en: Dwarf
+category: humanoid
+tier: 1
+description: >
+  키가 작고 튼튼하며 광업과 대장기술에 능한 종족.
+  지하 왕국을 건설하고 최고 품질의 무기와 갑옷을 제작한다.
+  원한은 오래 기억하지만, 교역 파트너에게는 신뢰가 두텁다.
+
+stats:
+  max_population: 5000
+  growth_rate: 1.004
+  military_strength: 75
+  magic_affinity: 15
+  technology_level: 90      # 공학/제련 기술 최고
+  adaptability: 40          # 산악 특화, 개방 지형 불편
+  lifespan: 144000          # ~400년
+
+special_traits:
+  - id: master_craftsman
+    name: "마스터 장인"
+    description: "무기/갑옷 품질 +40%. 제작한 아이템 교역 시 자원 획득 +25%"
+
+  - id: underground_king
+    name: "지하의 왕"
+    description: "산악·지하 지형에서 이동 패널티 없음. 전투력 +20%. 광맥 발견 확률 +50%"
+
+  - id: grudge_keeper
+    name: "원한의 기록자"
+    description: >
+      드워프는 모욕이나 약탈을 절대 잊지 않는다.
+      원한 이벤트 발생 시 grudge_book에 기록되며
+      해결하지 않으면 시간이 지나도 친밀도 회복이 50% 제한된다.
+
+behavior:
+  aggression: 0.50
+  expansion_drive: 0.30     # 지하 위주 확장, 지상 확장은 소극적
+  alliance_tendency: 0.55
+  trade_focus: 0.80         # 교역이 핵심 생계
+  isolationism: 0.25
+
+diplomacy_trait:
+  trust_rate: 0.80
+  grudge_rate: 1.20
+  memory_duration: 500      # 원한 오래 기억
+  betrayal_penalty: 35
+
+diplomacy_defaults:
+  - target: human
+    affinity: 40            # 교역 파트너로 신뢰
+  - target: elf
+    affinity: -5            # 자연 파괴에 불만 있는 엘프가 껄끄러움
+  - target: halfling
+    affinity: 35
+  - target: orc
+    affinity: -50           # 오크의 광산 약탈로 적대
+  - target: golem
+    affinity: 30            # 기계 종족에 동료 의식
+  - target: undead
+    affinity: -40
+  - target: dragon
+    affinity: -10           # 드래곤이 광맥 근처에 살면 위협

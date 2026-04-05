@@ -1,0 +1,123 @@
+id: asteria
+name: 아스테리아 (Asteria)
+description: "별들의 땅. 다양한 종족이 공존하는 판타지 대륙. WorldAI 기본 세계관."
+
+map:
+  width: 100
+  height: 80
+  name: 에테르 대륙 (Aether Continent)
+
+time:
+  ticks_per_season: 90
+  seasons:
+    - id: spring
+      name: 봄
+      effects:
+        population_growth_bonus: 0.10
+        agriculture_bonus: 0.20
+    - id: summer
+      name: 여름
+      effects:
+        military_bonus: 0.05
+        trade_bonus: 0.15
+    - id: autumn
+      name: 가을
+      effects:
+        diplomacy_bonus: 0.10
+        storage_efficiency: 0.20
+    - id: winter
+      name: 겨울
+      effects:
+        population_growth_penalty: -0.20
+        military_penalty: -0.10
+        tech_research_bonus: 0.15   # 실내 연구
+
+world_events:
+  enabled: true
+  base_rate: 0.03           # 틱당 기본 발생 확률
+
+  random_events:
+    - id: great_harvest
+      name: 대풍년
+      chance_per_year: 0.05
+      effects:
+        all_races_food: +0.50
+    - id: great_famine
+      name: 대기근
+      chance_per_year: 0.03
+      effects:
+        all_races_population: -0.15
+    - id: magic_storm
+      name: 마법 폭풍
+      chance_per_year: 0.02
+      effects:
+        magic_zones_expand: true
+        magic_races_buff: +0.20
+    - id: plague
+      name: 역병
+      chance_per_year: 0.04
+      exclusions: [undead, golem]   # 면역 종족
+      effects:
+        region_population: -0.30
+    - id: ancient_ruin
+      name: 고대 유적 발견
+      chance_per_year: 0.03
+      effects:
+        discoverer_tech: +0.20
+    - id: dragon_awakening
+      name: 드래곤 각성
+      chance_per_year: 0.01
+      effects:
+        dragon_power_surge: true
+        nearby_morale_penalty: -0.15
+
+starting_races:
+  - id: human
+    start_region: central_plains
+    population: 2000
+    tech_level: 65
+
+  - id: elf
+    start_region: western_forest
+    population: 800
+    tech_level: 55
+
+  - id: dwarf
+    start_region: eastern_mountain
+    population: 600
+    tech_level: 90
+
+  - id: orc
+    start_region: northern_plains
+    population: 1500
+    tech_level: 25
+
+  - id: halfling
+    start_region: central_plains
+    population: 700
+    tech_level: 45
+
+  # 나머지 종족은 랜덤 배치 (optional)
+  - id: beastman
+    start_region: random_wild
+    population: 900
+
+  - id: fairy
+    start_region: western_forest
+    population: 400
+
+  - id: dragon
+    start_region: mountain_peak
+    population: 20
+
+  - id: undead
+    start_region: southern_wasteland
+    population: 300
+
+  - id: elemental
+    start_region: magic_zone
+    population: 200
+
+  - id: golem
+    start_region: eastern_mountain   # 드워프가 최초 제작
+    population: 100

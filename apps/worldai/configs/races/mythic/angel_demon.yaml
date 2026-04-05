@@ -1,0 +1,67 @@
+id: angel_demon
+name: 천사 / 악마
+name_en: Angel / Demon
+category: mythic
+tier: 3
+description: >
+  천상계(천사)와 마계(악마)에서 온 초월적 존재.
+  두 세력은 세계 각지에서 끊임없이 충돌하며 필멸 종족을 대리전에 이용한다.
+  시스템 내에서 angel과 demon은 사실상 별개 진영으로 동작하지만
+  하나의 설정 파일로 관리한다.
+
+# 주의: angel과 demon의 친밀도는 항상 -100 (코드에서 하드 고정)
+angel_demon_affinity_lock: -100
+
+factions:
+  - id: angel
+    name: 천사
+    description: "빛과 질서의 화신. 언데드·악마와 영원한 전쟁"
+    stats_modifier:
+      magic_affinity: +10
+      military_strength: -5
+      alliance_tendency: +0.20  # 선한 종족과 협력 선호
+
+  - id: demon
+    name: 악마
+    description: "어둠과 혼돈의 화신. 언데드와 연대，선 종족을 타락시킴"
+    stats_modifier:
+      aggression: +0.20
+      magic_affinity: +5
+      diplomacy_corruption: true  # 타 종족 외교 수치 왜곡 가능
+
+stats:
+  max_population: 300       # 극소수
+  growth_rate: 1.001
+  military_strength: 95
+  magic_affinity: 100
+  technology_level: 5       # 마법에만 의존
+  adaptability: 95
+  lifespan: 9999999
+
+special_traits:
+  - id: divine_intervention
+    name: "신성 개입 / 마계 유혹"
+    description: "동맹 종족에게 강력한 축복(천사) 또는 저주(악마) 부여. 전쟁 중 기적적 역전 가능"
+
+  - id: celestial_influence
+    name: "천상/마계의 영향"
+    description: "반경 3타일 내 종족의 외교 성향에 영향을 줌. 천사는 친밀도 +5, 악마는 공격성 +0.1"
+
+behavior:
+  aggression: 0.50
+  expansion_drive: 0.30     # 영향력 확대 중심, 영토보다 신자/추종자
+  alliance_tendency: 0.50
+  trade_focus: 0.05
+  isolationism: 0.40
+
+diplomacy_defaults:
+  - target: undead
+    affinity: -100          # 천사 기준. 악마는 +20
+  - target: fairy
+    affinity: 40            # 천사 기준. 순수한 존재 보호
+  - target: elf
+    affinity: 25
+  - target: human
+    affinity: 20            # 필멸 종족을 대리자로 활용
+  - target: dragon
+    affinity: -10
