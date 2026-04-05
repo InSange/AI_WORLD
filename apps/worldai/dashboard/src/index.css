@@ -65,6 +65,86 @@ h1, h2, h3 {
   border-color: var(--primary-glow);
 }
 
+/* Layout Utilities */
+.layout-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.5rem;
+}
+
+.col-8 { grid-column: span 8 / span 8; }
+.col-4 { grid-column: span 4 / span 4; }
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-1 { flex: 1; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+
+.p-3 { padding: 0.75rem; }
+.p-4 { padding: 1rem; }
+.p-6 { padding: 1.5rem; }
+.p-8 { padding: 2rem; }
+
+.rounded-lg { border-radius: 0.5rem; }
+.rounded-xl { border-radius: 0.75rem; }
+.rounded-2xl { border-radius: 1rem; }
+
+/* Components */
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.bg-white-5 { background-color: rgba(255, 255, 255, 0.05); }
+.bg-primary-5 { background-color: rgba(99, 102, 241, 0.05); }
+.bg-black-20 { background-color: rgba(0, 0, 0, 0.2); }
+
+.border-w-5 { border: 1px solid rgba(255, 255, 255, 0.05); }
+.border-dash { border-style: dashed; }
+
+/* Text Utilities */
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+
+.font-bold { font-weight: 700; }
+.font-black { font-weight: 900; }
+
+.color-primary { color: var(--primary); }
+.color-muted { color: var(--text-muted); }
+.color-darker { color: var(--text-darker); }
+
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.h-half { height: 50%; }
+.overflow-hidden { overflow: hidden; }
+.overflow-y-auto { overflow-y: auto; }
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

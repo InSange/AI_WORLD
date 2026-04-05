@@ -1,8 +1,9 @@
 from __future__ import annotations
 import random
+import math
 from enum import Enum
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, Any
 
 class TileType(str, Enum):
     SNOW = "snow"           # 설원 (North Extreme)
@@ -98,15 +99,58 @@ class WorldMap:
         if tile:
             tile.faction_id = faction_id
 
-    def to_summary_dict(self) -> dict:
-        """대시보드 전송용 압축 데이터 (지형 인덱스 리스트)"""
-        type_to_idx = {t: i for i, t in enumerate(TileType)}
-        flattened = []
+    def to_summary_dict(self, factions: list["Faction"] = None) -> dict[str, Any]:
+        """대시보드 전송용 압축 데이터 (지형 인덱스 + 영토 인덱스)"""
+        type_to_idx = {t.value: i for i, t in enumerate(TileType)}
+        flattened_tiles = []
         for row in self.tiles:
             for tile in row:
-                flattened.append(type_to_idx[tile.tile_type])
-        return {
+                flattened_tiles.append(type_to_idx[tile.tile_type.value])
+        
+        result = {
             "width": self.width,
             "height": self.height,
-            "data": flattened
+            "data": flattened_tiles,
+            "territories": []
         }
+
+        if factions:
+            result["territories"] = self.get_territory_data(factions)
+
+        return result
+
+    def get_territory_data(self, factions: list["Faction"]) -> list[int]:
+        """
+        영향력 기반 영토 지도를 생성한다.
+        - 영향력 = Faction.population / (Distance^2 + 1)
+        - 반환값: Faction 리스트에서의 인덱스 (소유주 없으면 -1)
+        """
+        territories = [-1] * (self.width * self.height)
+        if not factions:
+            return territories
+
+        # 최적화: 유효한 파별 정보 미리 추출
+        faction_infos = [
+            (i, f.location_x, f.location_y, f.population)
+            for i, f in enumerate(factions) if f.is_alive
+        ]
+
+        for y in range(self.height):
+            for x in range(self.width):
+                max_influence = 0.0
+                owner_idx = -1
+                
+                for idx, fx, fy, pop in faction_infos:
+                    # 유클리드 거리 제곱
+                    dist_sq = (x - fx)**2 + (y - fy)**2
+                    influence = pop / (dist_sq + 1.0)
+                    
+                    if influence > max_influence:
+                        max_influence = influence
+                        owner_idx = idx
+                
+                # 최소 영향력 문턱값 (예: 인구 대비 일정 수준 이상의 영향력이 있어야 영토로 인정)
+                if max_influence > 0.5:
+                    territories[y * self.width + x] = owner_idx
+
+        return territories

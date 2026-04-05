@@ -33,8 +33,11 @@ async def get_status(req: Request):
     return SimulationStatusSchema(
         tick=world.tick,
         year=world.year,
-        season=world.season.value,
+        season=world.season.display(),
         season_display=world.season.display(),
+        hour=world.hour_of_day,
+        day_phase=world.day_phase.value,
+        is_daytime=world.is_daytime,
         total_population=sum(int(r.population) for r in active),
         active_races=len(active),
         total_events=len(world.event_log),
@@ -73,6 +76,9 @@ async def tick_once(req: Request):
         "tick": result.tick,
         "year": result.year,
         "season": result.season.display(),
+        "hour": world.hour_of_day,
+        "day_phase": world.day_phase.value,
+        "is_daytime": world.is_daytime,
         "events": [e.to_dict() for e in result.events]
     })
 
@@ -81,6 +87,9 @@ async def tick_once(req: Request):
         year=result.year,
         season=result.season.value,
         season_display=result.season.display(),
+        hour=world.hour_of_day,
+        day_phase=world.day_phase.value,
+        is_daytime=world.is_daytime,
         population_changes={k: round(v, 2) for k, v in result.population_changes.items()},
         events=[
             EventSchema(
@@ -142,6 +151,8 @@ async def run_ticks(
         "current_tick": world.tick,
         "current_year": world.year,
         "current_season": world.season.display(),
+        "current_hour": world.hour_of_day,
+        "current_phase": world.day_phase.display(),
         "populations": pop_snapshots,
     })
 

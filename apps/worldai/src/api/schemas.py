@@ -53,6 +53,9 @@ class SimulationStatusSchema(BaseModel):
     year: int
     season: str
     season_display: str
+    hour: int
+    day_phase: str
+    is_daytime: bool
     total_population: int
     active_races: int
     total_events: int
@@ -72,7 +75,8 @@ class MapTileSchema(BaseModel):
 class WorldMapSchema(BaseModel):
     width: int
     height: int
-    data: list[int]  # 지형 타입 인덱스 리스트 (압축)
+    data: list[int]         # 지형 타입 인덱스 리스트 (압축)
+    territories: list[int]  # 영토 소유 파벌 인덱스 리스트 (압축)
 
 
 # ── 세계 전체 상태 ────────────────────────────
@@ -95,6 +99,9 @@ class TickResultSchema(BaseModel):
     year: int
     season: str
     season_display: str
+    hour: int
+    day_phase: str
+    is_daytime: bool
     population_changes: dict[str, float]
     events: list[EventSchema]
 

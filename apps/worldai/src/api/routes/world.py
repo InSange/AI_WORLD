@@ -23,6 +23,10 @@ def _world(req: Request):
     return req.app.state.world
 
 
+def _fm(req: Request):
+    return req.app.state.fm
+
+
 # ── GET /world ────────────────────────────────────────
 
 @router.get("", response_model=WorldStateSchema, summary="전체 세계 상태")
@@ -70,7 +74,7 @@ async def get_world(req: Request):
         season=world.season.value,
         season_display=world.season.display(),
         races=races, diplomacy=diplomacy, recent_events=events,
-        map=WorldMapSchema(**world.map.to_summary_dict())
+        map=WorldMapSchema(**world.map.to_summary_dict(factions=_fm(req).all_factions()))
     )
 
 
@@ -164,7 +168,8 @@ async def get_map(req: Request):
     지형 타입이 인덱스로 압축된 리스트 형태.
     """
     world = _world(req)
-    return WorldMapSchema(**world.map.to_summary_dict())
+    fm = _fm(req)
+    return WorldMapSchema(**world.map.to_summary_dict(factions=fm.all_factions()))
 
 
 

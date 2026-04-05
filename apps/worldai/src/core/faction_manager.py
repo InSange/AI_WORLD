@@ -392,9 +392,11 @@ class FactionManager:
     def _pay_tribute(self, faction: Faction) -> None:
         """상납 처리 (간략화: 인구 성장 페널티로 표현)"""
         rate = 0.25 if faction.affiliation_type == AffiliationType.COLONY else 0.15
-        # 실제 구현에서는 parent의 자원에 더하고 자신은 차감
-        # 지금은 성장률 페널티로만 표현
-        faction.population = max(1.0, faction.population * (1 - rate * 0.001))
+        factor = (1 - rate * 0.001)
+        
+        # 인구 세그먼트 전체에 페널티 적용 (population 프로퍼티는 리드온리이므로)
+        for segment in faction.population_segments:
+            segment.count = max(0.0, segment.count * factor)
 
     def _check_auto_spawn(self, tick: int) -> list[EventLog]:
         """이주/탐험으로 새 마을 자동 생성 시뮬레이션 (낮은 확률)"""

@@ -2,6 +2,9 @@ export interface WSMessage {
   type: 'INIT' | 'UPDATE' | 'SUMMARY' | 'EVENT';
   tick?: number;
   year?: number;
+  hour?: number;
+  day_phase?: string;
+  is_daytime?: boolean;
   season?: string;
   events?: any[];
   map?: any;
