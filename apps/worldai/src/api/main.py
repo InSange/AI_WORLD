@@ -89,6 +89,14 @@ async def lifespan(app: FastAPI):
     app.state.world = world
     app.state.fm = faction_manager
     app.state.auto_running = False
+
+    # ── [Dirty Region] 영토 캐시 초기화 ─────────────────
+    # 첫 틱부터 get_territory_delta()가 동작하려면
+    # 전체 계산(get_territory_data) 결과를 캐시에 세팅해야 한다.
+    all_factions = faction_manager.all_factions()
+    faction_manager._territory_cache = world.map.get_territory_data(all_factions)  # type: ignore[attr-defined]
+    print(f"🗺️  영토 캐시 초기화 완료 ({len(faction_manager._territory_cache)} 타일)")
+
     print("✅ 시뮬레이션 초기화 완료\n")
 
     yield

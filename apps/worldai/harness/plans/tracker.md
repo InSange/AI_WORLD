@@ -189,12 +189,12 @@ GET  /player/grid-view         - 반경 N타일 현황
   1. 지형 Enum 동기화: map.py TileType 순서 ↔ MapCanvas.tsx TILE_COLORS(0:Water...) 반드시 일치.
   2. 맵 크기: default_world.yaml width/height = 200 확인 (변경 시 프론트 좌표 정규화 깨짐).
   3. 영토 캐시: fm._territory_cache 초기화 전 get_territory_data() 전체 계산 1회 필요.
-     → main.py lifespan에서 초기 캐시 세팅 추가 필요 (미구현 — 다음 작업 1순위).
+     → main.py lifespan 및 /reset 엔드포인트에서 초기 캐시 세팅 완료.
   4. territory_delta: WebSocket UPDATE 메시지에 포함. 클라이언트 미처리 시 무시해도 무방
      (REST /world/tiles 호출로 전체 재동기화 가능).
 
 다음 구현 순서 (Phase 6):
-  1. main.py lifespan에 _territory_cache 초기 세팅 추가
+  1. ✅ main.py lifespan + /reset에 _territory_cache 초기 세팅 완료
   2. GitHub Actions 워크플로우 (.github/workflows/)
   3. pytest 단위 테스트 보강 (get_territory_delta 포함)
 ```

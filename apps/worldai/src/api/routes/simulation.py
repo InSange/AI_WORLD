@@ -216,6 +216,9 @@ async def reset_simulation(req: Request):
     from src.api.main import _setup_default_factions
     _setup_default_factions(world, fm)
 
+    # 영토 캐시 재초기화 (Dirty Region 정합성 유지)
+    fm._territory_cache = world.map.get_territory_data(fm.all_factions())  # type: ignore[attr-defined]
+
     req.app.state.world = world
     req.app.state.fm = fm
 
