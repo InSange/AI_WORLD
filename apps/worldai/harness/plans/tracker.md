@@ -47,7 +47,7 @@ apps/worldai/src/api/
 
 docs/
   world_design.md   - 대륙 7개 권역, 다중 파벌 공존
-  race_specs.md     - 11개 종족 상세 스펙
+  race_specs.md     - 13개 종족 상세 스펙
   faction_system.md - 파벌 소속/규모 체계
   religion_system.md - 교단 시스템
   rank_level_system.md - 등급/레벨/직위 3축

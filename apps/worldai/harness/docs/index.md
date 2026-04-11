@@ -10,7 +10,7 @@
 apps/worldai/
 ├── configs/          # YAML 설정 (사용자 커스터마이징 가능)
 │   ├── worlds/       # 세계관 설정
-│   └── races/        # 종족 데이터 (15종족)
+│   └── races/        # 종족 데이터 (13종족)
 ├── src/              # Python 소스코드
 │   ├── core/         # 시뮬레이션 코어
 │   ├── config/       # YAML 로더

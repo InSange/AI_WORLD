@@ -10,7 +10,7 @@
 |-------|------|------|------|
 | Phase 0 | 하네스 골격 | 프로젝트 구조 + 문서 시스템 | ✅ 완료 |
 | Phase 1 | 기획 문서 | 세계관·종족·시스템 설계 문서화 | ✅ 완료 |
-| Phase 2 | YAML 데이터 | 15종족 설정 파일 + 설정 로더 | 🔜 예정 |
+| Phase 2 | YAML 데이터 | 13종족 설정 파일 + 설정 로더 | 🔜 예정 |
 | Phase 3 | 시뮬레이션 코어 | Python 시뮬레이션 엔진 구현 | 🔜 예정 |
 | Phase 4 | API 서버 | FastAPI REST 서버 구현 | 🔜 예정 |
 | Phase 5 | 웹 대시보드 | React + TypeScript 시각화 | 🔜 예정 |
@@ -47,7 +47,7 @@ Python 설정 로더로 자동 탐색·로드한다.
 ### 완료 기준
 ```powershell
 python -c "from src.config.race_loader import load_all_races; print(load_all_races())"
-# → 15개 종족 정보 출력
+# → 13개 종족 정보 출력
 ```
 
 ---
