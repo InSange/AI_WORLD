@@ -2,6 +2,7 @@ id: dwarf
 name: 드워프
 name_en: Dwarf
 category: humanoid
+preferred_biomes: ["mountain"]
 tier: 1
 description: >
   키가 작고 튼튼하며 광업과 대장기술에 능한 종족.

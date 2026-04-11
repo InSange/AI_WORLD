@@ -76,6 +76,7 @@ class RaceConfig:
     behavior: BehaviorProfile = field(default_factory=BehaviorProfile)
     diplomacy_trait: DiplomacyTrait = field(default_factory=DiplomacyTrait)
     diplomacy_defaults: list[DiplomacyDefault] = field(default_factory=list)
+    preferred_biomes: list[str] = field(default_factory=list)
     raw: dict[str, Any] = field(default_factory=dict)  # 원본 YAML 전체 보관
 
 
@@ -138,6 +139,8 @@ def _parse_race(data: dict[str, Any]) -> RaceConfig:
         for d in data.get("diplomacy_defaults", [])
     ]
 
+    preferred_biomes = data.get("preferred_biomes", ["plains", "forest"])
+
     return RaceConfig(
         id=data["id"],
         name=data.get("name", data["id"]),
@@ -150,6 +153,7 @@ def _parse_race(data: dict[str, Any]) -> RaceConfig:
         behavior=behavior,
         diplomacy_trait=diplomacy_trait,
         diplomacy_defaults=diplomacy_defaults,
+        preferred_biomes=preferred_biomes,
         raw=data,
     )
 

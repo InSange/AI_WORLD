@@ -20,7 +20,11 @@ interface TileInfo {
     scale: string;
     status: string;
     leader?: string;
+    leaderTitle?: string;
     capitalPos: { x: number, y: number };
+    military?: number;
+    specialties?: string[];
+    recentEvents?: any[];
   };
 }
 
@@ -59,7 +63,7 @@ export const TileInspector: React.FC<TileInspectorProps> = ({ info }) => {
 
       {/* Terrain Badge */}
       <div className="flex items-center gap-3 p-3 bg-white-5 rounded-xl border-w-5">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center terrain-${terrain.toLowerCase()}`} style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center terrain-${(terrain || 'plains').toLowerCase()}`} style={{ width: '40px', height: '40px', flexShrink: 0 }}>
           <Info size={20} style={{ color: 'white' }} />
         </div>
         <div>
@@ -104,19 +108,47 @@ export const TileInspector: React.FC<TileInspectorProps> = ({ info }) => {
               </div>
               <div className="bg-black-20 p-3 rounded-xl border-w-5">
                 <div className="flex items-center gap-2 color-muted font-bold mb-1" style={{ fontSize: '10px' }}>
-                  <Sword size={12} /> STATUS
+                  <Sword size={12} /> MILITARY
                 </div>
-                <div className="text-sm font-bold" style={{ color: owner.status === 'Conflict' ? 'var(--accent)' : '#4ade80' }}>
-                  {owner.status}
+                <div className="text-sm font-bold text-red-400">
+                  {Math.round(owner.military || 0).toLocaleString()}
                 </div>
               </div>
             </div>
 
-            <div style={{ marginTop: '8px' }}>
-              <div className="p-1 px-2 rounded font-black color-primary" style={{ display: 'inline-block', backgroundColor: 'rgba(99, 102, 241, 0.2)', fontSize: '9px', textTransform: 'uppercase' }}>
-                Leader: {owner.leader || "Unknown"}
+            {owner.specialties && owner.specialties.length > 0 && (
+              <div className="flex gap-2 mt-2 flex-wrap">
+                 {owner.specialties.map(spec => (
+                    <span key={spec} className="px-2 py-1 bg-white-10 rounded text-[10px] uppercase font-bold text-text-muted">
+                        {spec.replace('_', ' ')}
+                    </span>
+                 ))}
+              </div>
+            )}
+
+            <div style={{ marginTop: '8px', padding: '8px', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="text-[10px] color-muted font-bold uppercase mb-1">Ruler / Leader</div>
+              <div className="font-bold text-sm color-primary flex items-center gap-2">
+                 <Crown size={14} className="text-yellow-500" />
+                 {owner.leader ? `${owner.leaderTitle || ''} ${owner.leader}` : "No Ruling Leader"}
               </div>
             </div>
+
+            {/* Recent Events */}
+            {owner.recentEvents && owner.recentEvents.length > 0 && (
+              <div style={{ marginTop: '8px' }}>
+                <div className="text-[10px] color-muted font-bold uppercase mb-2">Recent Activities</div>
+                <div className="flex flex-col gap-2">
+                  {owner.recentEvents.map((evt: any, i: number) => (
+                    <div key={i} className="bg-black-20 p-2 rounded-lg border-w-5">
+                      <div className="text-[10px] uppercase font-bold text-yellow-400 mb-1">{evt.type || evt.event_type} (Tick {evt.tick})</div>
+                      <div className="text-xs font-bold">{evt.title}</div>
+                      <div className="text-[10px] color-muted mt-1 leading-tight">{evt.description}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="p-8 text-center bg-white-5 border-dash border-w-5 rounded-2xl">

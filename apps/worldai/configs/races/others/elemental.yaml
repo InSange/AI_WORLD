@@ -2,6 +2,7 @@ id: elemental
 name: 정령 (4원소)
 name_en: Elemental Spirit
 category: others
+preferred_biomes: ["mountain", "lake", "desert", "snow"]
 tier: 2
 description: >
   불, 물, 땅, 바람의 원소를 다루는 존재.

@@ -2,6 +2,7 @@ id: half_beast
 name: 반인반수 (켄타우로스·하피·라미아)
 name_en: Half-Beast
 category: beastmen
+preferred_biomes: ["plains", "forest", "wasteland"]
 tier: 2
 description: >
   켄타우로스(상반신 인간+하반신 말), 하피(인간+새), 라미아(인간+뱀) 등

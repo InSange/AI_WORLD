@@ -33,81 +33,47 @@ from src.core.models import AffiliationType
 # ── 기본 파벌 초기화 ──────────────────────────────────
 
 def _setup_default_factions(world: World, fm: FactionManager) -> None:
-    """기본 세계 시작 파벌 생성"""
-    # ── 인간 파벌
-    fm.create_faction(
-        "central_empire", "아스테리아 중앙 제국", "human", "central_plains",
-        population=25000, affiliation=AffiliationType.INDEPENDENT,
-        religion_id="angel_faith", location=(50, 40),
-    )
-    fm.create_faction(
-        "north_wall_guard", "북벽 수비대", "human", "northern_tundra",
-        population=120, affiliation=AffiliationType.COLONY,
-        parent_id="central_empire", location=(40, 5),
-        specialty=["border_defense", "cold_resistance"],
-    )
-    fm.create_faction(
-        "river_kingdom", "강변 왕국 리베르", "human", "river_coast",
-        population=8500, affiliation=AffiliationType.VASSAL,
-        parent_id="central_empire", religion_id="angel_faith", location=(35, 55),
-        specialty=["trade", "navy"],
-    )
-    fm.create_faction(
-        "plains_village_a", "황금 밀밭 마을", "human", "central_plains",
-        population=230, affiliation=AffiliationType.INDEPENDENT,
-        location=(48, 35), specialty=["agriculture"],
-    )
+    """선호 지형 기반 파벌 동적 배치"""
+    occupied_spots = []
+    
+    def spawn(f_id, name, race_id, pop, affil=AffiliationType.INDEPENDENT, parent=None, rel=None, specs=None):
+        race = world.races.get(race_id)
+        prefs = race.preferred_biomes if race else ["plains"]
+        loc = world.map.find_suitable_location(prefs, occupied_spots, min_dist=15.0)
+        occupied_spots.append(loc)
+        # 구 지역(region)명은 하드코딩 대신 찾은 타일의 생물군계를 한글로 변환
+        tile = world.map.get_tile(loc[0], loc[1])
+        region = tile.tile_type.display() if tile else "미개척지"
+        
+        fm.create_faction(
+            f_id, name, race_id, region,
+            population=pop, affiliation=affil, parent_id=parent, religion_id=rel,
+            location=loc, specialty=specs or []
+        )
 
-    # ── 엘프 파벌
-    fm.create_faction(
-        "ancient_forest_realm", "고대 숲의 성역", "elf", "western_forest",
-        population=800, affiliation=AffiliationType.INDEPENDENT,
-        religion_id="nature_faith", location=(10, 30),
-        specialty=["magic_research", "forest_defense"],
-    )
+    # ── 제국 및 산하
+    spawn("central_empire", "아스테리아 중앙 제국", "human", 32000, rel="angel_faith")
+    spawn("river_kingdom", "강변 왕국 리베르", "human", 12000, AffiliationType.VASSAL, parent="central_empire", rel="angel_faith", specs=["trade", "navy"])
+    
+    # 북부 요새들
+    spawn("northern_fortress_1", "제1북벽 철성 요새", "human", 150, AffiliationType.COLONY, parent="central_empire", specs=["border_defense"])
+    spawn("northern_fortress_2", "왕국 전초기지", "human", 80, AffiliationType.COLONY, parent="river_kingdom")
+    spawn("northern_fortress_3", "관측소", "human", 50, AffiliationType.COLONY, parent="central_empire")
 
-    # ── 드워프 파벌
-    fm.create_faction(
-        "ironpeak_kingdom", "철봉 지하왕국", "dwarf", "eastern_mountain",
-        population=4500, affiliation=AffiliationType.INDEPENDENT,
-        religion_id="ancestor_faith", location=(90, 30),
-        specialty=["mining", "crafting"],
-    )
-    fm.create_faction(
-        "goblin_mine_outpost", "고블린 광산 전초기지 (드워프 대항)", "dwarf", "eastern_mountain",
-        population=45, affiliation=AffiliationType.COLONY,
-        parent_id="ironpeak_kingdom", location=(85, 20), specialty=["mining"],
-    )
+    # ── 드래곤 교단 (산맥)
+    spawn("dragon_cult_alpha", "첫번째 발톱 마을", "human", 450, rel="dragon_cult", specs=["dragon_kin"])
+    spawn("dragon_cult_beta", "솟은 봉우리 신도회", "human", 300, rel="dragon_cult")
 
-    # ── 오크 파벌
-    fm.create_faction(
-        "plains_horde", "대평원 오크 무리", "orc", "central_plains",
-        population=1500, affiliation=AffiliationType.INDEPENDENT,
-        location=(70, 45), specialty=["raiding"],
-    )
+    # ── 이종족 독립 파벌들
+    spawn("ancient_forest_realm", "고대 숲의 성역", "elf", 1200, rel="nature_faith", specs=["magic_research", "forest_defense"])
+    spawn("ironpeak_kingdom", "철봉 지하왕국", "dwarf", 6000, rel="ancestor_faith", specs=["mining", "crafting"])
+    spawn("southern_undead_domain", "언데드 사멸의 영지", "undead", 2000, rel="demon_cult", specs=["death_harvest"])
+    spawn("orc_war_camp", "불타는 도끼 부족", "orc", 4500, rel="demon_cult", specs=["raiding", "war_camp"])
 
-    # ── 수인
-    fm.create_faction(
-        "iron_claw_tribe", "철발톱 부족 (견족)", "beastman", "northern_tundra",
-        population=280, affiliation=AffiliationType.INDEPENDENT,
-        religion_id="nature_faith", location=(30, 8), specialty=["hunting"],
-    )
+    # ── 초월자
+    spawn("peak_dragon_grimm", "고대룡 그리말", "dragon", 1, specs=["apex_predator"])
 
-    # ── 드래곤
-    fm.create_faction(
-        "peak_dragon_grimm", "설봉의 노룡 그리말", "dragon", "northern_tundra",
-        population=1, affiliation=AffiliationType.INDEPENDENT,
-        location=(50, 3), specialty=["apex_predator"],
-    )
-
-    # ── 언데드
-    fm.create_faction(
-        "southern_undead_domain", "남부 언데드 영지", "undead", "southern_wasteland",
-        population=300, affiliation=AffiliationType.INDEPENDENT,
-        religion_id="demon_cult", location=(60, 72), specialty=["death_harvest"],
-    )
-
-    print(f"✅ 기본 파벌 {len(fm.all_factions())}개 생성 완료")
+    print(f"✅ 동적 지형 탐색 기반 파벌 {len(fm.all_factions())}개 생성 완료")
 
 
 # ── App Lifespan (시작/종료) ────────────────────────────

@@ -2,6 +2,7 @@ id: halfling
 name: 하플링
 name_en: Halfling
 category: humanoid
+preferred_biomes: ["plains", "forest"]
 tier: 1
 description: >
   드워프보다 작고 조용한 생활을 좋아하는 종족.

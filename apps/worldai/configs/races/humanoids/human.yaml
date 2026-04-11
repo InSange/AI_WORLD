@@ -2,6 +2,7 @@ id: human
 name: 인간
 name_en: Human
 category: humanoid
+preferred_biomes: ["plains", "forest", "lake"]
 tier: 1
 description: >
   가장 보편적인 종족이나 개체 능력은 평범하다.

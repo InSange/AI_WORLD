@@ -16,7 +16,7 @@
 - **Scaffold**: Vite (`apps/worldai/dashboard/`)
 - **State Management**: React Context 또는 단순 `useEffect` 기반 WS 수신.
 - **Components**:
-    - `MapViewer`: Canvas API 기반 100x80 그리드 렌더링.
+    - `MapViewer`: Canvas API 기반 100x100 그리드 렌더링.
     - `EventLog`: Framer Motion 애니메이션이 적용된 실시간 피드.
     - `RaceStats`: Recharts 기반 인구/군사력/기술력 시계열 차트.
 
@@ -25,15 +25,25 @@
 ## 2. 세부 구현 로직
 
 ### 2.1 맵 시각화 (MapCanvas)
-- 8,000개 타일을 효율적으로 그리기 위해 Canvas API 사용.
+- 10,000개 타일을 효율적으로 그리기 위해 Canvas API 사용.
 - 지형 타입별 색상 팔레트 완비 (9종 지형 범례).
 - 파벌 거점(Capital) 다이아몬드 마커 및 종족별 고유 색상 적용.
 - **영토-거점 하이라이트**: 영토 호버 시 해당 파벌의 본성과 점선 및 펄스 효과로 연결.
 
-### 2.2 실시간 통신 (WebSockets)
+### 2.2 지형 생성 알고리즘 (Hub-based Radial Engine)
+- **방위별 거점(Hub) 설정**:
+    - **West (0.0, 0.5)**: `WATER` (깊은 바다)
+    - **North (0.5, 0.0)**: `SNOW / MOUNTAIN` (동토의 장벽)
+    - **South (0.5, 1.0)**: `DESERT / WATER` (따뜻한 해안/사막)
+    - **East (1.0, 0.5)**: `FOREST / MOUNTAIN` (울창한 동부)
+    - **Center (0.5, 0.5)**: `PLAINS` (풍요로운 평원)
+- **지수적 거리 가중치**: `1 / (distance^power)` 공식을 사용하여 각 중점에서 지형 특성이 강력하게 발산되도록 구현.
+- **클러스터링 노이즈**: 삼각함수(Sine/Cosine) 기반 저주파 노이즈를 섞어 지형이 뭉치도록 유도.
+
+### 2.3 데이터 정합성 및 실시간 통신 (WebSockets)
+- **Index Sync (Critical)**: 백엔드 `TileType` Enum 순서와 프론트엔드 `TILE_COLORS` 배열 순서를 1:1로 일치시켜 렌더링 오차 제거. (0: Water, 1: Plains...)
 - 클라이언트 접속 시 현재 세계 상태(Full Payload) 전송.
 - 틱 발생 시마다 `SimulationStatus`와 `EventLog` 브로드캐스트.
-- 틱 직후 `/factions` 데이터를 재로드하여 인구 변화 실시간 동기화.
 
 ### 2.3 레이아웃 (Vanilla CSS)
 - Tailwind 의존성 없이 `index.css`에 직접 정의된 12컬럼 그리드 시스템.
@@ -61,7 +71,9 @@
 - [x] 프론트엔드: MapCanvas 시각화 2.0 (거점 마커, 하이라이트 연결) 개발
 - [x] 프론트엔드: TileInspector 상세 정보 패널 구현
 - [x] 프론트엔드: 실시간 이벤트 피드 및 범례(Legend) 개발
-- [x] 통합: 100x80 전체 그리드에 대한 정밀 마우스 좌표 인식 최적화
+- [x] 통합: 100x100 전체 그리드에 대한 정밀 마우스 좌표 인식 최적화
+- [x] 혁신: 중점(Hub) 기반 방사형 지형 생성 알고리즘 도입
+- [x] 고도화: 백엔드-프론트엔드 지형 인덱스(0:Water...) 동기화 완료
 
 ---
 

@@ -284,7 +284,13 @@ class FactionManager:
             if faction.affiliation_type in (AffiliationType.COLONY, AffiliationType.VASSAL):
                 self._pay_tribute(faction)
 
-        # 4. 독립 파벌 자동 생성 체크 (100틱마다)
+            # 4. 파벌 간 독립 외교 (거리 기반 상호작용)
+            if tick % 10 == 0:  # 10틱마다 스캔
+                evt = self._handle_faction_diplomacy(faction, tick)
+                if evt:
+                    events.append(evt)
+
+        # 5. 독립 파벌 자동 생성 체크 (100틱마다)
         if tick % 100 == 0:
             events.extend(self._check_auto_spawn(tick))
 
@@ -428,6 +434,71 @@ class FactionManager:
                         affected_races=[faction.race],
                     ))
         return events
+
+    def _handle_faction_diplomacy(self, faction: Faction, tick: int) -> EventLog | None:
+        """파벌 단위의 독립적인 외교 및 상호작용 발생 (거리 기반)"""
+        # 주변 30거리 내의 다른 파벌을 찾는다
+        neighbors = [
+            f for f in self.all_factions() 
+            if f.id != faction.id 
+            and ((f.location_x - faction.location_x)**2 + (f.location_y - faction.location_y)**2) <= 900
+        ]
+        
+        if not neighbors:
+            return None
+        
+        target = random.choice(neighbors)
+        
+        # 현재 우호도 (없으면 0)
+        current_aff = faction.faction_affinity.get(target.id, 0.0)
+        
+        # 같은 국적(Race)이면 우호적 관계 형성 확률 높음
+        is_same_race = (faction.race == target.race)
+        
+        # 랜덤 이벤트 발생 결정
+        roll = random.random()
+        delta = 0.0
+        event_type = None
+        title = ""
+        desc = ""
+        
+        if is_same_race and roll < 0.05:
+            # 동맹 제안 또는 교역로 개설
+            if current_aff < 50.0:
+                delta = random.uniform(20.0, 40.0)
+                event_type = "ALLIANCE_PROPOSED"
+                title = f"[외교] {faction.name} ↔ {target.name}: 동맹 맺음"
+                desc = f"같은 핏줄인 두 파벌이 힘을 합치기로 결의했습니다."
+        elif not is_same_race and roll < 0.05:
+            # 국경 마찰 (전쟁/경계)
+            if current_aff > -30.0:
+                delta = random.uniform(-20.0, -40.0)
+                event_type = "DIPLOMATIC_TENSION"
+                title = f"[분쟁] {faction.name} ↔ {target.name}: 국경 충돌"
+                desc = f"인접한 두 세력의 국경 수비대 간에 무력 충돌이 발생했습니다."
+        elif roll < 0.03:
+            # 무역상단 교류
+            delta = random.uniform(5.0, 15.0)
+            event_type = "TRADE_ROUTE_OPEN"
+            title = f"[교역] {faction.name} ↔ {target.name}: 교역단 왕래"
+            desc = f"서로 간에 활발한 상단이 오가며 자원이 교환되고 우호도가 올랐습니다."
+
+        if delta != 0.0:
+            new_aff = max(-100.0, min(100.0, current_aff + delta))
+            faction.faction_affinity[target.id] = new_aff
+            target.faction_affinity[faction.id] = new_aff  # 쌍방 동기화
+            
+            return EventLog(
+                tick=tick,
+                event_type=event_type,
+                title=title,
+                description=desc,
+                affected_races=[faction.race, target.race],
+                affected_factions=[faction.id, target.id],
+                faction_affinity_changes={f"{faction.id}↔{target.id}": round(new_aff - current_aff, 1)}
+            )
+            
+        return None
 
     # ── 디버그 출력 ───────────────────────────────
 

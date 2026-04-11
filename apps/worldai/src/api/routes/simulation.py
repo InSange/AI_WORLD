@@ -98,7 +98,9 @@ async def tick_once(req: Request):
                 title=e.title,
                 description=e.description,
                 affected_races=e.affected_races,
+                affected_factions=e.affected_factions,
                 affinity_changes=e.affinity_changes,
+                faction_affinity_changes=e.faction_affinity_changes,
             )
             for e in result.events
         ],

@@ -1,7 +1,7 @@
 # WorldAI — Phase 상태 트래커
 
 > **마지막 업데이트**: 2026-04-06
-> **현재 Phase**: Phase 5 완료 (실시간 영토 가시성 2.0 및 버그 수정 완료)
+> **현재 Phase**: Phase 5 완료 (중점 기반 지형 엔진 및 100x100 시각화 완료)
 
 ---
 
@@ -52,7 +52,7 @@ docs/
   rank_level_system.md - 등급/레벨/직위 3축
   transcendent_system.md - 초월자 시스템
   time_system.md    - 시간 시스템
-  map.py           - 100x80 그리드 맵 시스템 ← 신규 추가
+  map.py           - 100x100 중점 기반 지형 시스템 (Enum Sync 완료)
 ```
 
 ---
@@ -71,7 +71,7 @@ docs/
 [확정] 종족별 시간대 활성도 배율 (언데드 DEEP_NIGHT: 2.0, 등)
 [확정] 유동 인구 5타입: SETTLER / MERCHANT / ADVENTURER / MILITARY / REFUGEE
 [확정] 정착민은 인구 과잉에도 이동 안 함 (기근·전쟁 시에만 이주민 전환)
-[확정] 100x80 그리드 맵: 위도(Y) 기준 지형 생성 (북부-설원, 중앙-평원, 남부-사막)
+[확정] 100x100 그리드 맵: 중점(Hub) 기반 방사형 생성 (0:Water, 1:Plains...)
 [확정] 틱당 이동: 1틱(1시간)마다 인접 1타일 이동 가능
 [미확정] 멀티플레이어 시 틱 동기화 방식
 ```
@@ -88,8 +88,10 @@ docs/
 - [x] 백엔드: WebSocket 매니저 및 틱 브로드캐스트 로직 구현
 - [x] 프론트엔드: Vite + React 대시보드 구축 (MapCanvas, StatsDashboard)
 - [x] 프리미엄 디자인(Dark Mode, Glassmorphism) 적용 완료
-- [x] 기능 고도화: 영토 소유권 시각화, 거점 하이라이트, 100x80 좌표 정규화 정밀 제어
-- [x] 버그 수정: 파벌 인구 세터 오류 해결 및 캔버스 렌더링 불일치 교정
+- [x] 기능 고도화: 영토 소유권 시각화, 거점 하이라이트, 100x100 좌표 정규화 정밀 제어
+- [x] 지형 엔진 혁신: 5대 거점(Hub) 기반 방사형 지형 생성 및 군집화(Clustered) 로직 적용
+- [x] 데이터 정합성: 백엔드-프론트엔드 지형 Enum Index (0:WATER...) 완벽 동기화
+- [x] 버그 수정: TileInspector 크래시 해결 및 100x80 YAML 설정 오버라이드 해결
 
 ---
 
@@ -130,7 +132,7 @@ GET  /player/grid-view         - 반경 N타일 현황
 ```
 
 ### [MEDIUM] 세계 지도 타일 시스템
-- 100×80 격자에 지형 타입, 파벌 점령 상태 저장
+- 100×100 격자에 지형 타입, 파벌 점령 상태 저장
 - Faction.territory_tiles → 실제 타일 좌표 목록
 
 ### [MEDIUM] 역사 기록 시스템
@@ -159,24 +161,16 @@ GET  /player/grid-view         - 반경 N타일 현황
 ## 📝 AI 인수인계 메모
 
 ```
-[Antigravity → 다음 작업자]
-Phase 5까지 완료. 실시간 웹 대시보드가 성공적으로 구축되어 WebSocket 통신이 가능함.
-현재 100x80 그리드 맵과 인구/이벤트 실시간 피드가 시각적으로 표현됨.
+[Antigravity → Gemini Pro]
+Phase 5 완료. 100x100 실시간 웹 대시보드와 중점(Hub) 기반 지형 엔진이 성공적으로 구축됨.
 
-서버 실행:
-  cd apps/worldai
-  python -m uvicorn src.api.main:app --reload --port 8000
-  (별도 터미널) cd dashboard && npm run dev
+⚠️ 핵심 확인 사항 (Troubleshooting):
+  1. 지형 색상 레이블: map.py의 TileType Enum 순서는 프론트엔드 MapCanvas.tsx의 TILE_COLORS(0:Water, 1:Plains...)와 정확히 일치해야 함.
+  2. 맵 크기: configs/worlds/default_world.yaml의 height가 100인지 항상 확인 (80일 경우 하단 블랙아웃 발생).
+  3. 지형 엔진: Hub Dominance 방식 적용 중. 중점에 가까울수록 지형이 강하게 고정됨.
 
 다음 구현 순서 (Phase 6):
   1. GitHub Actions 워크플로우 설정 (.github/workflows/)
   2. 코어 로직의 단위 테스트(Pytest) 대폭 보강
-  3. 프론트엔드 E2E 테스트 또는 빌드 자동화
-  4. Docker Compose를 통한 원클릭 배포 환경 구축
-
-핵심 포인트:
-  - 대시보드는 `apps/worldai/dashboard/`에 위치함
-  - 브로드캐스트 데이터 구조는 `src/api/websocket_manager.py`를 따름
-  
-docs/milestones/ 및 phase_5_dashboard.md 참고 필수.
+  3. 인구 이동/전투 로직의 그리드 타일 레벨 통합
 ```

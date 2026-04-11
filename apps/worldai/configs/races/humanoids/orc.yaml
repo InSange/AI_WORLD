@@ -2,6 +2,7 @@ id: orc
 name: 오크 (Orc 계열)
 name_en: Orc
 category: humanoid
+preferred_biomes: ["wasteland", "desert", "mountain", "plains"]
 tier: 1
 description: >
   강력한 육체와 빠른 번식력을 지닌, 엘프와 대조되는 종족.

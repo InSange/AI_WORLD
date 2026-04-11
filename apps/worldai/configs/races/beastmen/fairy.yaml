@@ -2,6 +2,7 @@ id: fairy
 name: 페어리 / 요정
 name_en: Fairy
 category: beastmen
+preferred_biomes: ["forest", "lake"]
 tier: 2
 description: >
   작은 몸집과 마법 능력을 지닌 정령 같은 존재.

@@ -166,6 +166,9 @@ class RaceState:
     # 특수 능력 ID 목록 (코드에서 참조용)
     trait_ids: list[str] = field(default_factory=list)
 
+    # 선호 생물 군계 (종족 특화 지형)
+    preferred_biomes: list[str] = field(default_factory=list)
+
     # 자원
     food: float = 1000.0
     iron: float = 200.0
@@ -221,8 +224,10 @@ class EventLog:
     title: str
     description: str
     affected_races: list[str]
+    affected_factions: list[str] = field(default_factory=list)
     affinity_changes: dict[str, float] = field(default_factory=dict)
-    # 예: {"human→elf": +5.0, "elf→human": +2.0}
+    faction_affinity_changes: dict[str, float] = field(default_factory=dict)
+    # 예: {"human→elf": +5.0} (종족) / {"central_empire→river_kingdom": -10.0} (파벌)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -231,7 +236,9 @@ class EventLog:
             "title": self.title,
             "description": self.description,
             "affected": self.affected_races,
+            "affected_factions": self.affected_factions,
             "affinity_changes": self.affinity_changes,
+            "faction_affinity_changes": self.faction_affinity_changes,
         }
 
 

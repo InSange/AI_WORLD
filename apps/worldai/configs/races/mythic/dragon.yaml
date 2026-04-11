@@ -2,6 +2,7 @@ id: dragon
 name: 드래곤
 name_en: Dragon
 category: mythic
+preferred_biomes: ["mountain"]
 tier: 3
 description: >
   판타지 세계의 정점에 서 있는 강력한 파충류형 생물.

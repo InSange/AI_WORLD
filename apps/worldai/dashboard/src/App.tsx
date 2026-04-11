@@ -17,6 +17,8 @@ const App: React.FC = () => {
   const [status, setStatus] = useState<WSMessage | null>(null);
   const [factions, setFactions] = useState<any[]>([]);
   const [mapData, setMapData] = useState<number[] | null>(null);
+  const [mapWidth, setMapWidth] = useState<number>(100);
+  const [mapHeight, setMapHeight] = useState<number>(100);
   const [territories, setTerritories] = useState<number[] | null>(null);
   const [hoverInfo, setHoverInfo] = useState<any | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
@@ -30,6 +32,8 @@ const App: React.FC = () => {
 
     // 2. 초기 맵 데이터 로드 (영토 정보 포함)
     api.getMap().then(data => {
+      if (data.width) setMapWidth(data.width);
+      if (data.height) setMapHeight(data.height);
       if (data.data) setMapData(data.data);
       if (data.territories) setTerritories(data.territories);
     });
@@ -41,6 +45,8 @@ const App: React.FC = () => {
         if (msg.events) {
           setLogs(prev => [...msg.events!, ...prev].slice(0, 50));
         }
+        if (msg.map?.width) setMapWidth(msg.map.width);
+        if (msg.map?.height) setMapHeight(msg.map.height);
         if (msg.map?.data) {
           setMapData(msg.map.data);
         }
@@ -53,14 +59,15 @@ const App: React.FC = () => {
     return unsub;
   }, []);
 
-  const handleTileHover = (x: number, y: number, terrainType: number) => {
+  const handleTileClick = (x: number, y: number, terrainType: number) => {
     if (!territories) return;
-    const idx = y * 100 + x;
+    
+    const idx = y * mapWidth + x;
     const ownerIdx = territories[idx];
     
-    // 지형 이름 매핑
-    const terrainNames = ["Water", "Plains", "Forest", "Mountain", "Snow", "Tundra", "Desert", "Wasteland", "Tropical"];
-    const terrainName = terrainType !== -1 ? terrainNames[terrainType] : "Unknown";
+    // 현재 맵의 가로 크기 (100x100 기반) 삭제 이후 인덱싱 부분
+    const terrainNames = ["Ocean", "Plains", "Forest", "Mountain", "Snow", "Desert", "Wasteland", "Lake/River"];
+    const terrainName = terrainType !== -1 && terrainType < terrainNames.length ? terrainNames[terrainType] : "Unknown";
     
     let ownerInfo = undefined;
     if (ownerIdx !== -1 && factions[ownerIdx]) {
@@ -72,7 +79,11 @@ const App: React.FC = () => {
         scale: f.scale_display,
         status: "Peaceful", // 추후 확장
         leader: f.leader?.name,
-        capitalPos: { x: f.location.x, y: f.location.y }
+        leaderTitle: f.leader?.title,
+        capitalPos: { x: f.location.x, y: f.location.y },
+        military: f.military_strength,
+        specialties: f.specialty,
+        recentEvents: logs.filter(l => l.affected?.includes(f.race) || l.affected?.includes(f.id)).slice(0, 3)
       };
     }
 
@@ -87,7 +98,6 @@ const App: React.FC = () => {
     setIsTicking(true);
     try {
       await api.triggerTick();
-      // 틱 이후 파벌 인구 등 정보 갱신을 위해 재로드
       const res = await fetch(`http://${window.location.hostname}:8000/factions`);
       const data = await res.json();
       setFactions(data.factions);
@@ -95,6 +105,35 @@ const App: React.FC = () => {
       console.error(err);
     } finally {
       setTimeout(() => setIsTicking(false), 300);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm("진행 중인 틱과 이벤트를 모두 잃고 월드를 다시 생성하시겠습니까?")) return;
+    setIsTicking(true);
+    try {
+      await api.resetSimulation();
+      
+      // 맵 및 파벌 즉시 재로드
+      const [factionsRes, mapDataRes] = await Promise.all([
+        fetch(`http://${window.location.hostname}:8000/factions`),
+        api.getMap()
+      ]);
+      const factionsData = await factionsRes.json();
+      setFactions(factionsData.factions);
+      
+      if (mapDataRes.width) setMapWidth(mapDataRes.width);
+      if (mapDataRes.height) setMapHeight(mapDataRes.height);
+      if (mapDataRes.data) setMapData(mapDataRes.data);
+      if (mapDataRes.territories) setTerritories(mapDataRes.territories);
+      
+      setStatus(null); // 로컬 상태 초기화
+      setLogs([]);
+      setHoverInfo(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsTicking(false);
     }
   };
 
@@ -119,6 +158,15 @@ const App: React.FC = () => {
           <StatBox label="Season" value={status?.season ?? "Spring"} icon={<Waves size={14} />} />
           
           <button 
+            onClick={handleReset}
+            disabled={isTicking}
+            className="btn-danger rounded-xl px-4 py-3 font-bold flex items-center bg-red-600/80 hover:bg-red-500/80 transition"
+            title="Reset simulation and regenerate map"
+          >
+            <RefreshCcw size={18} />
+          </button>
+          
+          <button 
             onClick={handleTick}
             disabled={isTicking}
             className={`btn-primary rounded-xl px-6 py-3 font-bold ${isTicking ? 'glow' : ''}`}
@@ -136,11 +184,13 @@ const App: React.FC = () => {
         {/* Left: Map */}
         <section className="col-8 flex flex-col gap-6 animate-fade-in overflow-y-auto" style={{ animationDelay: '0.1s' }}>
           <MapCanvas 
-            onHover={handleTileHover} 
+            onClick={handleTileClick} 
             mapData={mapData}
             territories={territories} 
             factions={factions}
             hoverInfo={hoverInfo}
+            width={mapWidth}
+            height={mapHeight}
           />
           
           <div className="grid grid-cols-2 gap-6">
@@ -188,16 +238,35 @@ const App: React.FC = () => {
                   Waiting for events...
                 </div>
               ) : (
-                logs.map((log, i) => (
-                  <div key={i} className="p-3 rounded-lg bg-white-5 border-w-5 animate-fade-in">
+                logs.map((log, i) => {
+                  const hasFactions = log.affected_factions && log.affected_factions.length > 0;
+                  return (
+                  <div 
+                    key={i} 
+                    className={`p-3 rounded-lg bg-white-5 border-w-5 animate-fade-in ${hasFactions ? 'cursor-pointer hover:bg-white-10 transition' : ''}`}
+                    onClick={() => {
+                      if (!hasFactions) return;
+                      const fid = log.affected_factions[0]; // 주요 당사자 1
+                      const faction = factions.find(f => f.id === fid);
+                      if (faction) {
+                        // API 지형을 모르니 단순히 정보창만 띄우도록
+                        handleTileClick(faction.location.x, faction.location.y, -1);
+                      }
+                    }}
+                  >
                     <div className="flex justify-between text-xs font-bold color-primary mb-1">
-                      <span style={{ fontSize: '10px', textTransform: 'uppercase' }}>{log.event_type}</span>
+                      <span style={{ fontSize: '10px', textTransform: 'uppercase' }}>{log.type || log.event_type}</span>
                       <span className="color-darker">Tick {log.tick}</span>
                     </div>
                     <div className="font-bold text-sm mb-1">{log.title}</div>
                     <p className="text-xs color-muted" style={{ lineHeight: '1.5' }}>{log.description}</p>
+                    {hasFactions && (
+                      <div className="mt-2 text-[10px] text-primary bg-primary/10 rounded px-2 py-1 inline-block">
+                        🔍 클릭하여 당사자({factions.find(f => f.id === log.affected_factions[0])?.name}) 정보 보기
+                      </div>
+                    )}
                   </div>
-                ))
+                )})
               )}
             </div>
           </div>

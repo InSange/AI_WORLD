@@ -84,10 +84,9 @@ async def list_factions(
         from src.core.models import SettlementScale
         factions = [f for f in factions if f.scale.value == scale]
 
-    sorted_factions = sorted(factions, key=lambda f: -f.population)
     return FactionListSchema(
-        total=len(sorted_factions),
-        factions=[_faction_to_schema(f) for f in sorted_factions],
+        total=len(factions),
+        factions=[_faction_to_schema(f) for f in factions],
     )
 
 

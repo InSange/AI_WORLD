@@ -3,9 +3,14 @@ name: 아스테리아 (Asteria)
 description: "별들의 땅. 다양한 종족이 공존하는 판타지 대륙. WorldAI 기본 세계관."
 
 map:
-  width: 100
-  height: 80
+  width: 200
+  height: 200
   name: 에테르 대륙 (Aether Continent)
+  unexplored_borders:
+    north: true    # 북쪽만 미개척지(바다로 안 막힘)
+    south: false   # 바다로 막힘
+    east: false    # 바다로 막힘
+    west: false    # 바다로 막힘
 
 # 시간 단위 설정 (1틱 = 1시간 기준으로 확정)
 time_config:

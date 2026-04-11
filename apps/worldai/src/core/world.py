@@ -166,7 +166,8 @@ class World:
             description=world_cfg.description,
             map=WorldMap(
                 width=map_cfg.get("width", 100),
-                height=map_cfg.get("height", 80)
+                height=map_cfg.get("height", 100),
+                unexplored_borders=map_cfg.get("unexplored_borders", {"north": True, "south": False, "east": False, "west": False})
             )
         )
 

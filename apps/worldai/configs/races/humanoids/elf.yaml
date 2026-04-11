@@ -2,6 +2,7 @@ id: elf
 name: 엘프
 name_en: Elf
 category: humanoid
+preferred_biomes: ["forest"]
 tier: 2
 description: >
   장수하며 마법과 자연에 친숙한 종족. 수천 년을 살아 깊은 지혜를 가지지만

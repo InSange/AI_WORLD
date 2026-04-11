@@ -64,7 +64,9 @@ async def get_world(req: Request):
             tick=e.tick, event_type=e.event_type,
             title=e.title, description=e.description,
             affected_races=e.affected_races,
+            affected_factions=e.affected_factions,
             affinity_changes=e.affinity_changes,
+            faction_affinity_changes=e.faction_affinity_changes,
         )
         for e in world.event_log[-30:]
     ]

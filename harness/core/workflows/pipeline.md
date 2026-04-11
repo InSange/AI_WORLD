@@ -25,7 +25,7 @@
 
 작업 시작 전 반드시 계획을 수립한다.
 
-- `implementation_plan.md` 업데이트
+- `tracker.md` 업데이트
 - 수정할 파일 목록 확인 (최대 3개)
 - 사용자 승인 후 구현 시작
 
@@ -43,7 +43,7 @@
   ```powershell
   .\harness\scripts\checkpoint.ps1 "구현 시작 전"
   ```
-- `task.md` 진행 상황 업데이트
+- `tracker.md` 진행 상황 업데이트
 
 ---
 

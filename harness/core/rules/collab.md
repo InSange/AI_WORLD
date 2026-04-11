@@ -63,7 +63,7 @@ tracker.md = 현재 세계의 진실(Source of Truth)
 ## 5. 문서 우선순위
 
 ```
-tracker.md > implementation_plan.md > constitution.md > 코드 주석
+tracker.md > constitution.md > 코드 주석
 ```
 
 최신 상태는 항상 tracker.md를 기준으로 한다.

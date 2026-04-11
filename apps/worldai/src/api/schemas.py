@@ -43,7 +43,9 @@ class EventSchema(BaseModel):
     title: str
     description: str
     affected_races: list[str]
+    affected_factions: list[str] = Field(default_factory=list)
     affinity_changes: dict[str, float] = Field(default_factory=dict)
+    faction_affinity_changes: dict[str, float] = Field(default_factory=dict)
 
 
 # ── 시뮬레이션 상태 ───────────────────────────

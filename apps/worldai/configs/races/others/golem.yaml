@@ -2,6 +2,7 @@ id: golem
 name: 골렘 / 기계 종족
 name_en: Golem / Construct
 category: others
+preferred_biomes: ["mountain", "wasteland", "desert"]
 tier: 2
 description: >
   마법이나 기술로 만들어진 인공 생명체.

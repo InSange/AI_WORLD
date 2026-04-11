@@ -2,6 +2,7 @@ id: angel_demon
 name: 천사 / 악마
 name_en: Angel / Demon
 category: mythic
+preferred_biomes: ["mountain", "desert", "wasteland"]
 tier: 3
 description: >
   천상계(천사)와 마계(악마)에서 온 초월적 존재.

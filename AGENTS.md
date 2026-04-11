@@ -15,7 +15,7 @@
 - [AGENTS.md](file:///c:/Users/선우/source/repos/WorldAI/AGENTS.md): 에이전트 작업 가이드 및 진입점
 - [CLAUDE.md](file:///c:/Users/선우/source/repos/WorldAI/CLAUDE.md): 아키텍처 원칙 및 헌법
 - [apps/worldai/harness/plans/tracker.md](file:///c:/Users/선우/source/repos/WorldAI/apps/worldai/harness/plans/tracker.md): 시뮬레이션 개발 단계 및 상태 트래커
-- [apps/worldai/harness/plans/phase_5_dashboard.md](file:///c:/Users/선우/source/repos/WorldAI/apps/worldai/harness/plans/phase_5_dashboard.md): Phase 5 진행 계획 및 설계 (현재 진행 중)
+- [apps/worldai/harness/plans/phase_5_dashboard.md](file:///c:/Users/선우/source/repos/WorldAI/apps/worldai/harness/plans/phase_5_dashboard.md): Phase 5 완수 상세 보고 및 10,000 타일 명세
 - [docs/](file:///c:/Users/선우/source/repos/WorldAI/docs/): 기획 및 기술 명세서 모음 (인구, 외교, 종교 등)
 - [docs/milestones/](file:///c:/Users/선우/source/repos/WorldAI/docs/milestones/): 완료된 주요 단계별 상세 리포트
 

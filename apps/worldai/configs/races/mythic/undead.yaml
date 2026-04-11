@@ -2,6 +2,7 @@ id: undead
 name: 언데드 (뱀파이어·리치·좀비)
 name_en: Undead
 category: mythic
+preferred_biomes: ["wasteland", "desert", "snow"]
 tier: 2
 description: >
   죽음에서 깨어난 존재들. 뱀파이어(지성형 지도자), 리치(마법형 지도자),

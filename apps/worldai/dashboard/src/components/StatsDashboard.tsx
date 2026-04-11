@@ -24,8 +24,8 @@ export const StatsDashboard: React.FC = () => {
         Population & Military Growth
         <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded">Real-time</span>
       </h3>
-      <div className="h-[180px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-[180px] w-full" style={{ minHeight: '180px' }}>
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={180}>
           <AreaChart data={data}>
             <defs>
               <linearGradient id="colorPop" x1="0" y1="0" x2="0" y2="1">

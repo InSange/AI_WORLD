@@ -2,6 +2,7 @@ id: beastman
 name: 수인 (견족/묘족 등)
 name_en: Beastman
 category: beastmen
+preferred_biomes: ["forest", "plains"]
 tier: 1
 description: >
   동물과 인간의 특징을 혼합한 종족.

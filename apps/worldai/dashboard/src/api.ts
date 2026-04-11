@@ -64,6 +64,12 @@ class WebSocketClient {
   async getMap() {
     return fetch(`http://${window.location.hostname}:8000/world/map`).then(res => res.json());
   }
+
+  async resetSimulation() {
+    return fetch(`http://${window.location.hostname}:8000/simulation/reset`, {
+      method: "POST"
+    }).then(res => res.json());
+  }
 }
 
 export const api = new WebSocketClient();
