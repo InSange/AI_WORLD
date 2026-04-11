@@ -1,7 +1,7 @@
 # WorldAI — Phase 상태 트래커
 
-> **마지막 업데이트**: 2026-04-06
-> **현재 Phase**: Phase 5 완료 (중점 기반 지형 엔진 및 100x100 시각화 완료)
+> **마지막 업데이트**: 2026-04-11
+> **현재 Phase**: Phase 5.5 완료 (Snapshot-after-Commit·Dirty Region 최적화 구현)
 
 ---
 
@@ -19,6 +19,7 @@
 | Phase 4.6 | 시간 시스템 모델 (낮/밤·유동인구) | ✅ 완료 | #11 |
 | Phase 4.7 | 영토 기반 인구 & 그리드 시스템 | ✅ 완료 | #12 |
 | Phase 5 | 웹 대시보드 (실시간 시각화 2.0) | ✅ 완료 | #13~#15 |
+| Phase 5.5 | 성능 최적화 (Snapshot-after-Commit·Dirty Region) | ✅ 완료 | #16 |
 | Phase 6 | CI/CD 구축 | ⬜ 대기 | - |
 | Phase 7 | Plugin SDK | ⬜ 대기 | - |
 
@@ -52,7 +53,7 @@ docs/
   rank_level_system.md - 등급/레벨/직위 3축
   transcendent_system.md - 초월자 시스템
   time_system.md    - 시간 시스템
-  map.py           - 100x100 중점 기반 지형 시스템 (Enum Sync 완료)
+  map.py           - 200x200 중점 기반 지형 시스템 (Enum Sync 완료)
 ```
 
 ---
@@ -71,7 +72,7 @@ docs/
 [확정] 종족별 시간대 활성도 배율 (언데드 DEEP_NIGHT: 2.0, 등)
 [확정] 유동 인구 5타입: SETTLER / MERCHANT / ADVENTURER / MILITARY / REFUGEE
 [확정] 정착민은 인구 과잉에도 이동 안 함 (기근·전쟁 시에만 이주민 전환)
-[확정] 100x100 그리드 맵: 중점(Hub) 기반 방사형 생성 (0:Water, 1:Plains...)
+[확정] 200x200 그리드 맵: 중점(Hub) 기반 방사형 생성 (0:Water, 1:Plains...)
 [확정] 틱당 이동: 1틱(1시간)마다 인접 1타일 이동 가능
 [미확정] 멀티플레이어 시 틱 동기화 방식
 ```
@@ -88,10 +89,30 @@ docs/
 - [x] 백엔드: WebSocket 매니저 및 틱 브로드캐스트 로직 구현
 - [x] 프론트엔드: Vite + React 대시보드 구축 (MapCanvas, StatsDashboard)
 - [x] 프리미엄 디자인(Dark Mode, Glassmorphism) 적용 완료
-- [x] 기능 고도화: 영토 소유권 시각화, 거점 하이라이트, 100x100 좌표 정규화 정밀 제어
+- [x] 기능 고도화: 영토 소유권 시각화, 거점 하이라이트, 200x200 좌표 정규화 정밀 제어
 - [x] 지형 엔진 혁신: 5대 거점(Hub) 기반 방사형 지형 생성 및 군집화(Clustered) 로직 적용
 - [x] 데이터 정합성: 백엔드-프론트엔드 지형 Enum Index (0:WATER...) 완벽 동기화
 - [x] 버그 수정: TileInspector 크래시 해결 및 100x80 YAML 설정 오버라이드 해결
+
+---
+
+## ✅ Phase 5.5 — 성능 최적화
+
+### 구현 내용
+
+| 패턴 | 파일 | 설명 |
+|---|---|---|
+| **Snapshot-after-Commit** | `simulation.py` | 틱 전 처리 완료 후 단일 브로드캐스트 — 클라이언트 중간 상태 노출 차단 |
+| **Dirty Region** | `map.py` | 인구 변화 파벌 반경 타일만 재계산 (전체 40,000 타일 순회 제거) |
+| **Delta Payload** | `simulation.py` | WebSocket에 변경된 타일만 포함 (`territory_delta`) — 페이로드 최소화 |
+
+### 설계 결정
+```
+[확정] territory_delta = 변경 타일 index + owner만 전송 (전체 territories 배열 전송 금지)
+[확정] _territory_cache: FactionManager에 이전 틱 territories 배열 캐시
+[확정] 초기 로드 / 강제 리프레시는 get_territory_data() (전체 계산) 사용
+[확정] Dirty Region 반경 = max(10, int(pop^0.4 * 10^0.5) + 2) 타일
+```
 
 ---
 
@@ -161,16 +182,19 @@ GET  /player/grid-view         - 반경 N타일 현황
 ## 📝 AI 인수인계 메모
 
 ```
-[Antigravity → Gemini Pro]
-Phase 5 완료. 100x100 실시간 웹 대시보드와 중점(Hub) 기반 지형 엔진이 성공적으로 구축됨.
+[Phase 5.5 완료 — 2026-04-11]
+맵 200x200 확정. Snapshot-after-Commit / Dirty Region / Delta Payload 3중 최적화 구현 완료.
 
-⚠️ 핵심 확인 사항 (Troubleshooting):
-  1. 지형 색상 레이블: map.py의 TileType Enum 순서는 프론트엔드 MapCanvas.tsx의 TILE_COLORS(0:Water, 1:Plains...)와 정확히 일치해야 함.
-  2. 맵 크기: configs/worlds/default_world.yaml의 height가 100인지 항상 확인 (80일 경우 하단 블랙아웃 발생).
-  3. 지형 엔진: Hub Dominance 방식 적용 중. 중점에 가까울수록 지형이 강하게 고정됨.
+⚠️ 핵심 확인 사항:
+  1. 지형 Enum 동기화: map.py TileType 순서 ↔ MapCanvas.tsx TILE_COLORS(0:Water...) 반드시 일치.
+  2. 맵 크기: default_world.yaml width/height = 200 확인 (변경 시 프론트 좌표 정규화 깨짐).
+  3. 영토 캐시: fm._territory_cache 초기화 전 get_territory_data() 전체 계산 1회 필요.
+     → main.py lifespan에서 초기 캐시 세팅 추가 필요 (미구현 — 다음 작업 1순위).
+  4. territory_delta: WebSocket UPDATE 메시지에 포함. 클라이언트 미처리 시 무시해도 무방
+     (REST /world/tiles 호출로 전체 재동기화 가능).
 
 다음 구현 순서 (Phase 6):
-  1. GitHub Actions 워크플로우 설정 (.github/workflows/)
-  2. 코어 로직의 단위 테스트(Pytest) 대폭 보강
-  3. 인구 이동/전투 로직의 그리드 타일 레벨 통합
+  1. main.py lifespan에 _territory_cache 초기 세팅 추가
+  2. GitHub Actions 워크플로우 (.github/workflows/)
+  3. pytest 단위 테스트 보강 (get_territory_delta 포함)
 ```

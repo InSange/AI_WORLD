@@ -55,13 +55,22 @@ async def tick_once(req: Request):
     world = _world(req)
     fm = _fm(req)
 
-    # 월드 틱
+    # ── [Snapshot-after-Commit] ────────────────────────────────────────
+    # 틱 처리 전 과정(월드 → 파벌 → 영토)을 완전히 완료한 뒤에만 브로드캐스트.
+    # WebSocket 구독자는 항상 완결된 상태 스냅샷만 수신하며,
+    # 처리 중간 상태(외교 수치 변경 후 영토 미반영 등)가 노출되지 않는다.
+    # ──────────────────────────────────────────────────────────────────
+
+    # 1. 월드 틱 (시간·인구·외교·행동·이벤트)
     result = world.tick_world()
 
-    # 파벌 매니저 틱
+    # 2. 파벌 매니저 틱 — 인구 성장·이동·종교 전파
     race_growths = {r.id: r.growth_rate for r in world.races.values()}
     from src.core.world import SEASON_POP_MODIFIER
     season_mod = SEASON_POP_MODIFIER[world.season]
+
+    # 인구 변화 발생 파벌 추적 (Dirty Region 계산용)
+    pop_before = {f.id: f.population for f in fm.all_factions()}
     faction_events = fm.tick(
         get_race_growth=lambda rid: race_growths.get(rid, 1.005),
         season_pop_mod=season_mod,
@@ -70,7 +79,24 @@ async def tick_once(req: Request):
     )
     result.events.extend(faction_events)
 
-    # ── WebSocket 브로드캐스트
+    # 3. [Dirty Region] 인구 변화가 있는 파벌만 영토 재계산
+    changed_ids = {
+        fid for fid, prev_pop in pop_before.items()
+        if abs(fm.get(fid).population - prev_pop) > 1.0
+    } if hasattr(fm, "_territory_cache") else set()
+
+    territory_delta: list[dict] = []
+    if changed_ids and hasattr(world.map, "get_territory_delta"):
+        prev_cache = getattr(fm, "_territory_cache", None)
+        if prev_cache is not None:
+            updated, territory_delta = world.map.get_territory_delta(
+                factions=fm.all_factions(),
+                changed_faction_ids=changed_ids,
+                prev_territories=prev_cache,
+            )
+            fm._territory_cache = updated  # type: ignore[attr-defined]
+
+    # ── 전 처리 완료 후 단일 스냅샷 브로드캐스트 (Snapshot-after-Commit)
     await manager.broadcast({
         "type": "UPDATE",
         "tick": result.tick,
@@ -79,7 +105,9 @@ async def tick_once(req: Request):
         "hour": world.hour_of_day,
         "day_phase": world.day_phase.value,
         "is_daytime": world.is_daytime,
-        "events": [e.to_dict() for e in result.events]
+        "events": [e.to_dict() for e in result.events],
+        # 변경된 타일만 포함 — 클라이언트는 이 delta로 로컬 캐시 패치
+        "territory_delta": territory_delta,
     })
 
     return TickResultSchema(

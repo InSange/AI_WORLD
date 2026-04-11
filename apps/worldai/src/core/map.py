@@ -228,15 +228,15 @@ class WorldMap:
 
     def get_territory_data(self, factions: list["Faction"]) -> list[int]:
         """
-        영향력 기반 영토 지도를 생성한다.
-        - 영향력 = Faction.population / (Distance^2 + 1)
+        영향력 기반 영토 지도를 생성한다. (전체 재계산 — 초기 로드 또는 강제 리프레시용)
+        - 영향력 = pop^0.4 * 10 / (dist² + 1)
         - 반환값: Faction 리스트에서의 인덱스 (소유주 없으면 -1)
+        틱당 호출은 get_territory_delta() 를 사용할 것.
         """
         territories = [-1] * (self.width * self.height)
         if not factions:
             return territories
 
-        # 최적화: 유효한 파별 정보 미리 추출
         faction_infos = [
             (i, f.location_x, f.location_y, f.population)
             for i, f in enumerate(factions) if f.is_alive
@@ -246,25 +246,84 @@ class WorldMap:
             for x in range(self.width):
                 max_influence = 0.0
                 owner_idx = -1
-                
                 for idx, fx, fy, pop in faction_infos:
                     dist_sq = (x - fx)**2 + (y - fy)**2
-                    
-                    # 자기 거점 타일인 경우 무조건 소유하도록 절대값 추가
-                    if dist_sq == 0:
-                        influence = 999999.0
-                    else:
-                        # 인구가 맵 전체를 뒤덮는 현상 방지: 로그/제곱근형 보정 적용
-                        # Pop 32000 -> 32000^0.4 * 10 ~ 632 (반경 약 35타일)
-                        # Pop 150 -> 150^0.4 * 10 ~ 74 (반경 약 12타일)
-                        influence = ((pop ** 0.4) * 10.0) / (dist_sq + 1.0)
-                    
+                    influence = 999999.0 if dist_sq == 0 else ((pop ** 0.4) * 10.0) / (dist_sq + 1.0)
                     if influence > max_influence:
                         max_influence = influence
                         owner_idx = idx
-                
-                # 최소 영향력 문턱값 (이 값 이하면 미개척지)
                 if max_influence > 0.5:
                     territories[y * self.width + x] = owner_idx
 
         return territories
+
+    def get_territory_delta(
+        self,
+        factions: list["Faction"],
+        changed_faction_ids: set[str],
+        prev_territories: list[int],
+    ) -> tuple[list[int], list[dict]]:
+        """
+        [Dirty Region] 변경된 파벌 주변 타일만 재계산한다.
+
+        전체 40,000타일을 순회하는 대신, 인구 변화가 발생한 파벌의
+        영향 반경(r = pop^0.4 * 10^0.5 ≈ 영향력이 0.5 문턱 이하가 되는 거리)
+        내부 타일만 dirty 마킹하여 재계산함.
+
+        Args:
+            factions: 전체 파벌 리스트
+            changed_faction_ids: 이번 틱에 인구·위치 변화가 있었던 파벌 ID 집합
+            prev_territories: 직전 틱 territories 배열 (캐시)
+
+        Returns:
+            (updated_territories, delta)
+            - updated_territories: 갱신된 전체 territories 배열 (캐시 교체용)
+            - delta: [{"index": int, "owner": int}, ...] — 변경된 타일만
+        """
+        if not changed_faction_ids or not prev_territories:
+            return prev_territories, []
+
+        faction_infos = [
+            (i, f.location_x, f.location_y, f.population)
+            for i, f in enumerate(factions) if f.is_alive
+        ]
+        faction_id_to_idx = {f.id: i for i, f in enumerate(factions)}
+
+        # dirty 타일 좌표 수집 — 변경된 파벌의 영향 반경 bounding box만
+        dirty_coords: set[tuple[int, int]] = set()
+        for fid in changed_faction_ids:
+            idx = faction_id_to_idx.get(fid)
+            if idx is None:
+                continue
+            f = factions[idx]
+            if not f.is_alive:
+                continue
+            radius = max(10, int((f.population ** 0.4) * (10.0 ** 0.5)) + 2)
+            x0 = max(0, f.location_x - radius)
+            x1 = min(self.width - 1, f.location_x + radius)
+            y0 = max(0, f.location_y - radius)
+            y1 = min(self.height - 1, f.location_y + radius)
+            for dy in range(y0, y1 + 1):
+                for dx in range(x0, x1 + 1):
+                    dirty_coords.add((dx, dy))
+
+        # dirty 타일만 영향력 재계산
+        updated = list(prev_territories)
+        delta: list[dict] = []
+
+        for (x, y) in dirty_coords:
+            max_influence = 0.0
+            owner_idx = -1
+            for i, fx, fy, pop in faction_infos:
+                dist_sq = (x - fx)**2 + (y - fy)**2
+                influence = 999999.0 if dist_sq == 0 else ((pop ** 0.4) * 10.0) / (dist_sq + 1.0)
+                if influence > max_influence:
+                    max_influence = influence
+                    owner_idx = i
+            new_owner = owner_idx if max_influence > 0.5 else -1
+            tile_idx = y * self.width + x
+            if updated[tile_idx] != new_owner:
+                updated[tile_idx] = new_owner
+                delta.append({"index": tile_idx, "owner": new_owner})
+
+        return updated, delta
