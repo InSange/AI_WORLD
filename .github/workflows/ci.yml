@@ -39,4 +39,4 @@ jobs:
     - name: Run Tests
       # PYTHONPATH 셋팅 후 pytest 실행
       run: |
-        PYTHONPATH=../../ pytest tests/ -v
+        PYTHONPATH=. pytest tests/ -v
