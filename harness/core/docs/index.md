@@ -12,7 +12,7 @@
 | 3 | `harness/core/rules/collab.md` | AI 간 협업 규칙 |
 | 4 | `harness/core/workflows/pipeline.md` | 작업 파이프라인 |
 | 5 | `apps/worldai/harness/docs/index.md` | 앱 문서 진입점 |
-| 6 | `apps/worldai/harness/plans/tracker.md` | 현재 Phase 상태 |
+| 6 | `apps/worldai/harness/plans/tracker.md` | 현재 Phase 상태 (Phase 7 완료) |
 
 ## 핵심 원칙 요약
 

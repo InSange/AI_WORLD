@@ -21,7 +21,7 @@ apps/worldai/
 ```
 
 ## 현재 Phase 상태
-→ `harness/plans/tracker.md` 참조
+→ `harness/plans/tracker.md` 참조 (Phase 7 완료)
 
 ## 빠른 실행
 

@@ -7,7 +7,7 @@
 1. `harness/core/docs/index.md` — 전역 규칙 인덱스
 2. `harness/core/workflows/pipeline.md` — 작업 파이프라인
 3. `apps/worldai/harness/docs/index.md` — 앱 문서 진입점
-4. `apps/worldai/harness/plans/tracker.md` — 현재 Phase 상태 (Phase 5.5 완료, Phase 6 대기)
+4. `apps/worldai/harness/plans/tracker.md` — 현재 Phase 상태 (Phase 7 완료)
 5. `docs/roadmap.md` — 전체 마일스톤 및 다음 Phase 상세 계획
 
 ## Documentation Map

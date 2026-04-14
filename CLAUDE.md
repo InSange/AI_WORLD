@@ -19,8 +19,8 @@
 1. `harness/core/docs/index.md` — 전역 규칙 인덱스
 2. `harness/core/workflows/pipeline.md` — 작업 파이프라인
 3. `apps/worldai/harness/docs/index.md` — 앱 문서 진입점
-4. `apps/worldai/harness/plans/tracker.md` — 현재 Phase 상태
-5. `apps/worldai/harness/plans/phase_5_dashboard.md` — Phase 5 상세 계획
+4. `apps/worldai/harness/plans/tracker.md` — 현재 Phase 상태 (Phase 7 완료)
+5. `apps/worldai/src/sdk/README.md` — Plugin SDK 가이드 (Phase 7 작성)
 
 ---
 
@@ -69,6 +69,7 @@
 | 이벤트 시스템 | `src/core/event_system.py` | 전쟁/동맹/재해 이벤트 |
 | 상태 관리 | `src/core/state_manager.py` | 시뮬레이션 저장/로드 |
 | API 서버 | `src/api/main.py` | FastAPI REST 서버 |
+| SDK 연동 | `src/sdk/` | Python/C# 외부 플러그인 확장 |
 
 ---
 
@@ -112,3 +113,4 @@
 |--------|------|
 | 2026-04-05 | YAML 설정 로더는 종족 추가 시 코드 변경 없이 자동 탐색 필요 |
 | 2026-04-05 | 외교 수치는 양방향이므로 A→B, B→A가 독립적으로 관리됨 |
+| 2026-04-14 | 외부 엔진 연동 통신 시 메인스레드 동기화를 위한 비동기 큐(`ConcurrentQueue`) 설계 활용 |
