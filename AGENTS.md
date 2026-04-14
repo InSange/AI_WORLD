@@ -30,6 +30,13 @@
 - 큰 변경 전에는 `harness/scripts/checkpoint.ps1`으로 git checkpoint를 만든다
 - 한 번에 최대 3개 파일만 수정한다
 
+## Git Commit Rules
+모든 AI 에이전트는 커밋 시 아래의 형식을 반드시 준수하여 깃 히스토리를 통일한다.
+- **포맷**: `#[넘버링] Phase X: 작업내용 요약 (한글)`
+- **예시**: `#18 Phase 6: CI/CD Pipeline 및 정적 분석 린트 에러 수정`
+- 커밋 전 `git log --oneline -n 5`를 통해 최근 넘버링(예: #17)을 확인하고 **+1 증가**시켜서 적용한다.
+- 영어보다는 한글로 직관적으로 작성하며, 핵심 작업 내역을 명확히 기재한다.
+
 ## Current Entry
 - `apps/worldai/README.md` — 사람 기준 실행 안내
 - `apps/worldai/harness/docs/index.md` — 앱 문서 진입점
