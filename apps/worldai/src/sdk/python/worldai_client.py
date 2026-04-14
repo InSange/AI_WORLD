@@ -9,7 +9,7 @@ class WorldAIClient:
         self.base_url = base_url.rstrip('/')
         self.ws_url = self.base_url.replace("http://", "ws://").replace("https://", "wss://")
         self.client = httpx.AsyncClient(base_url=self.base_url)
-        self._ws_connection: Optional[websockets.WebSocketClientProtocol] = None
+        self._ws_connection: Optional[Any] = None
         self._ws_task: Optional[asyncio.Task] = None
 
     async def get_world(self) -> Dict[str, Any]:
