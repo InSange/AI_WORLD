@@ -119,8 +119,8 @@ WorldAI/
 - [x] Phase 4.7: 영토 기반 인구 & 그리드 맵 (200x200)
 - [x] Phase 5: 웹 대시보드 (React/TS 실시간 시각화)
 - [x] Phase 5.5: 성능 최적화 (Snapshot-after-Commit·Dirty Region·Delta Payload)
-- [ ] Phase 6: CI/CD 구축
-- [ ] Phase 7: Plugin SDK (Python, C#)
+- [x] Phase 6: CI/CD 구축
+- [x] Phase 7: Plugin SDK (Python, C#)
 
 ---
 
