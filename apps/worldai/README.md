@@ -53,6 +53,51 @@ npm run dev
 python -m pytest tests/ -v --cov=src
 ```
 
+### 6. Docker로 전체 실행 (백엔드 + 대시보드)
+
+```powershell
+# apps/worldai/ 에서 실행
+docker-compose up --build
+
+# 백엔드: http://localhost:8000
+# 대시보드: http://localhost:80
+```
+
+---
+
+## SDK 연동 (외부 엔진)
+
+### Python SDK
+
+```python
+import asyncio
+from src.sdk.python.worldai_client import WorldAIClient
+
+async def main():
+    client = WorldAIClient("http://localhost:8000")
+    factions = await client.get_factions()
+    await client.tick(hours=5)
+    await client.close()
+
+asyncio.run(main())
+```
+
+### C# / Unity SDK
+
+```csharp
+// src/sdk/csharp/WorldAIClient.cs 파일을 Unity 프로젝트에 복사
+var client = new WorldAIClient("http://localhost:8000");
+var worldJson = await client.GetWorldAsync();
+
+// WebSocket 연결 (백그라운드 큐)
+await client.ConnectEventsAsync();
+
+// Unity Update()에서 메인 스레드 안전하게 소비
+foreach (var msg in client.ConsumeEvents()) { /* UI 반영 */ }
+```
+
+> 상세 가이드: `src/sdk/README.md`
+
 ---
 
 ## 커스터마이징

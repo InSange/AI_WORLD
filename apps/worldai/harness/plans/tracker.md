@@ -30,30 +30,52 @@
 ### 핵심 파일 구조
 ```
 apps/worldai/src/core/
-  models.py         - 전역 데이터 타입 (RaceState, Faction, Character 등)
-  diplomacy.py      - 비대칭 친밀도 + 임계값 이벤트 (60틱 쿨다운)
-  race_agent.py     - 종족 행동 AI
-  world.py          - 메인 틱 루프
-  event_system.py   - 랜덤 이벤트 (습격/기근/몬스터/역병)
+  models.py          - 전역 데이터 타입 (RaceState, Faction, Character 등)
+  diplomacy.py       - 비대칭 친밀도 + 임계값 이벤트 (60틱 쿨다운)
+  race_agent.py      - 종족 행동 AI
+  world.py           - 메인 틱 루프
+  event_system.py    - 랜덤 이벤트 (습격/기근/몬스터/역병)
   faction_manager.py - 파벌 CRUD + 종교 교세 + 초월자
+  map.py             - 200x200 Hub 기반 지형 생성 + Dirty Region (Enum Sync 완료)
 
 apps/worldai/src/api/
-  main.py           - FastAPI 앱 (lifespan, CORS, 기본 파벌 13종)
-  schemas.py        - Pydantic 응답 스키마
+  main.py               - FastAPI 앱 (lifespan, CORS, 기본 파벌 13종)
+  schemas.py            - Pydantic 응답 스키마
+  websocket_manager.py  - WebSocket 연결 관리 + 실시간 브로드캐스트
   routes/
-    simulation.py   - POST /tick, /run, /reset
-    world.py        - GET /world, /races, /diplomacy, /events, /leaderboard
-    factions.py     - GET /factions, POST /{id}/transcendent
+    simulation.py       - POST /simulation/tick, /run, /reset
+    world.py            - GET /world, /world/map, /leaderboard, /events
+    factions.py         - GET /factions, POST /factions/{id}/transcendent
+
+apps/worldai/src/config/
+  loader.py          - YAML 설정 로더 (종족·세계관 자동 탐색)
+
+apps/worldai/src/sdk/
+  README.md          - SDK 연동 가이드 (C#/Python 사용 예시)
+  python/
+    worldai_client.py - httpx + websockets 기반 비동기 Python 클라이언트
+    example.py        - 사용 예시
+  csharp/
+    WorldAIClient.cs  - HttpClient + ConcurrentQueue 기반 Unity 대응 C# 클라이언트
+    Models.cs         - 응답 DTO (FactionDto, EventDto, WsMessage 등)
+
+apps/worldai/
+  Dockerfile            - Python 백엔드 컨테이너
+  docker-compose.yml    - engine(8000) + dashboard(80) 멀티 컨테이너
+  dashboard/Dockerfile  - React 프론트엔드 컨테이너
+
+.github/workflows/
+  ci.yml  - Push/PR 시 Ruff·Mypy·Pytest 자동 실행
+  cd.yml  - 버전 태그 Push 시 Docker 빌드 환경 구성
 
 docs/
-  world_design.md   - 대륙 7개 권역, 다중 파벌 공존
-  race_specs.md     - 13개 종족 상세 스펙
-  faction_system.md - 파벌 소속/규모 체계
-  religion_system.md - 교단 시스템
-  rank_level_system.md - 등급/레벨/직위 3축
+  world_design.md       - 대륙 7개 권역, 다중 파벌 공존
+  race_specs.md         - 13개 종족 상세 스펙
+  faction_system.md     - 파벌 소속/규모 체계
+  religion_system.md    - 교단 시스템
+  rank_level_system.md  - 등급/레벨/직위 3축
   transcendent_system.md - 초월자 시스템
-  time_system.md    - 시간 시스템
-  map.py           - 200x200 중점 기반 지형 시스템 (Enum Sync 완료)
+  time_system.md        - 시간 시스템
 ```
 
 ---
@@ -136,9 +158,10 @@ docs/
 ### 구현 내용
 | 언어 | 경로 | 설명 |
 |---|---|---|
-| **Python** | `sdk/python/` | `httpx`, `websockets` 기반의 외부 봇/마이크로서비스용 비동기 클라이언트 |
-| **C#** | `sdk/csharp/` | `HttpClient`, `ClientWebSocket` 및 `ConcurrentQueue`를 사용한 Unity/순수 C# 대응 비동기 클라이언트 |
-| **명세** | `sdk/README.md` | 각종 언어별 초기화 방법 및 아키텍처 설명서 작성 |
+| **Python** | `src/sdk/python/worldai_client.py` | `httpx`, `websockets` 기반의 외부 봇/마이크로서비스용 비동기 클라이언트 |
+| **C#** | `src/sdk/csharp/WorldAIClient.cs` | `HttpClient`, `ClientWebSocket` 및 `ConcurrentQueue`를 사용한 Unity/순수 C# 대응 비동기 클라이언트 |
+| **C# 모델** | `src/sdk/csharp/Models.cs` | 응답 DTO (`FactionDto`, `EventDto`, `WsMessage`) |
+| **명세** | `src/sdk/README.md` | 각종 언어별 초기화 방법 및 아키텍처 설명서 작성 |
 
 
 ---

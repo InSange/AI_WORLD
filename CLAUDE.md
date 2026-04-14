@@ -67,9 +67,12 @@
 | 종족 에이전트 | `src/core/race_agent.py` | 종족 행동 AI |
 | 외교 시스템 | `src/core/diplomacy.py` | 친밀도(-100~+100) 관리 |
 | 이벤트 시스템 | `src/core/event_system.py` | 전쟁/동맹/재해 이벤트 |
-| 상태 관리 | `src/core/state_manager.py` | 시뮬레이션 저장/로드 |
-| API 서버 | `src/api/main.py` | FastAPI REST 서버 |
-| SDK 연동 | `src/sdk/` | Python/C# 외부 플러그인 확장 |
+| 파벌 관리 | `src/core/faction_manager.py` | 파벌 CRUD + 종교 교세 + 초월자 |
+| 그리드 맵 | `src/core/map.py` | 200x200 Hub 기반 지형 + Dirty Region |
+| 설정 로더 | `src/config/loader.py` | YAML 종족·세계관 자동 탐색 로더 |
+| API 서버 | `src/api/main.py` | FastAPI REST 서버 (v0.3.0) |
+| WebSocket | `src/api/websocket_manager.py` | 실시간 브로드캐스트 관리 |
+| SDK 연동 | `src/sdk/` | Python/C# 외부 플러그인 클라이언트 |
 
 ---
 
