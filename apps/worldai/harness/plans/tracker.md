@@ -21,7 +21,7 @@
 | Phase 5 | 웹 대시보드 (실시간 시각화 2.0) | ✅ 완료 | #13~#15 |
 | Phase 5.5 | 성능 최적화 (Snapshot-after-Commit·Dirty Region) | ✅ 완료 | #16 |
 | Phase 6 | CI/CD 구축 (Ruff, Mypy, Actions, Docker) | ✅ 완료 | 머지 전 |
-| Phase 7 | Plugin SDK | ⬜ 대기 | - |
+| Phase 7 | Plugin SDK | ✅ 완료 | 머지 전 |
 
 ---
 
@@ -128,15 +128,17 @@ docs/
 
 ---
 
-## 🔜 Phase 7 — 플러그인 SDK 연동 (준비 중)
+## ✅ Phase 7 — 플러그인 SDK 연동
 
 ### 목표
-유니티/언리얼/C++ 커스텀 엔진 등 외부 시스템에서 WorldAI 코어를 제어할 수 있는 SDK 및 API 확충.
+유니티/C++ 등 프론트 외부 시스템에서 WorldAI 코어를 제어할 수 있는 SDK 및 API 확충.
 
-### 계획
-- Plugin SDK 인터페이스 초안 작성
-- 웹소켓 연동 C#/C++ 클라이언트 예제 로직 구성
-- 타 엔진과 API 호출 및 페이로드 교환 안정성 테스트
+### 구현 내용
+| 언어 | 경로 | 설명 |
+|---|---|---|
+| **Python** | `sdk/python/` | `httpx`, `websockets` 기반의 외부 봇/마이크로서비스용 비동기 클라이언트 |
+| **C#** | `sdk/csharp/` | `HttpClient`, `ClientWebSocket` 및 `ConcurrentQueue`를 사용한 Unity/순수 C# 대응 비동기 클라이언트 |
+| **명세** | `sdk/README.md` | 각종 언어별 초기화 방법 및 아키텍처 설명서 작성 |
 
 
 ---
