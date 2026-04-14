@@ -1,6 +1,6 @@
 from __future__ import annotations
 import random
-import opensimplex  # type: ignore[import-untyped]
+import opensimplex  # type: ignore[import-untyped, import-not-found]
 from enum import Enum
 from dataclasses import dataclass
 from typing import Optional, Any, TYPE_CHECKING
