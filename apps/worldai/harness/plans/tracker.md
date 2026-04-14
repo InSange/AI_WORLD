@@ -168,37 +168,21 @@ docs/
 
 ## 📋 향후 백로그
 
-### [HIGH] 영토 기반 인구 계산
-```
-현재: 종족 전체 인구 = 단일 숫자
-목표: 각 파벌(마을)에 유동 타입별 인구 분산 저장
-      마을 인구가 늘면 이벤트 발생 확률 증가
-      유동 타입: 정착민(이동 안 함) / 상인·모험가(이동 가능) / 군인(명령 기반)
-      전투 = 해당 타일 군인 수로만 계산
-      영토 점령/해방 → 인구 재배치 이벤트
+> **상세 기능 목록 및 우선순위** → `docs/planning/feature_backlog.md` 참조  
+> **WorldBox 기능 분석 및 대응표** → `docs/planning/worldbox_reference.md` 참조
 
-RaceState.population → Faction별 PopulationSegment 합산으로 변경
-```
+### 요약 (상위 우선순위)
 
-### [HIGH] 플레이어 그리드 API
-```
-POST /player/register          - 플레이어를 특정 그리드에 등록
-POST /player/action            - 이번 틱 행동 등록
-GET  /player/events            - 내 그리드 이벤트 + 선택지
-POST /player/choice            - 이벤트 선택지 응답
-GET  /player/grid-view         - 반경 N타일 현황
-```
-
-### [MEDIUM] 세계 지도 타일 시스템
-- 100×100 격자에 지형 타입, 파벌 점령 상태 저장
-- Faction.territory_tiles → 실제 타일 좌표 목록
-
-### [MEDIUM] 역사 기록 시스템
-- 주요 이벤트 연대기 저장
-- `GET /world/history?year=3`
-
-### [LOW] 저장/불러오기
-- `POST /simulation/save` / `POST /simulation/load`
+| 순위 | 기능 | 난이도 | 참고 |
+|------|------|--------|------|
+| 1 | 반란/독립 이벤트 | 낮음 | WorldBox 반란 시스템 |
+| 2 | 플레이어 신(God) 개입 API | 낮음 | WorldBox 신의 능력 |
+| 3 | 바이옴별 자원 생산 | 중간 | WorldBox 지형 자원 |
+| 4 | 세계 시대 (Ages) 시스템 | 중간 | WorldBox Ages |
+| 5 | 영토 기반 인구 분산 | 중간 | 기존 PopulationSegment 설계 |
+| 6 | LLM 연동 (지도자 AI 대화) | 높음 | Claude API |
+| 7 | 역사 기록 시스템 | 낮음 | `GET /world/history` |
+| 8 | 저장/불러오기 | 낮음 | state_manager.py 신규 |
 
 ---
 

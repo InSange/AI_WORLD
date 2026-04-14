@@ -16,8 +16,9 @@
 - [CLAUDE.md](file:///c:/Users/선우/source/repos/WorldAI/CLAUDE.md): 아키텍처 원칙, 핵심 시스템 목록 및 헌법
 - [apps/worldai/harness/plans/tracker.md](file:///c:/Users/선우/source/repos/WorldAI/apps/worldai/harness/plans/tracker.md): 시뮬레이션 개발 단계, 파일 구조, 상태 트래커
 - [docs/roadmap.md](file:///c:/Users/선우/source/repos/WorldAI/docs/roadmap.md): 전체 마일스톤 및 Post v1.0 확장 계획
+- [docs/planning/feature_backlog.md](file:///c:/Users/선우/source/repos/WorldAI/docs/planning/feature_backlog.md): **Post v1.0 기능 백로그** (다음 구현 목록 — 여기서 시작)
+- [docs/planning/worldbox_reference.md](file:///c:/Users/선우/source/repos/WorldAI/docs/planning/worldbox_reference.md): WorldBox 기능 분석 및 WorldAI 대응표
 - [apps/worldai/src/sdk/README.md](file:///c:/Users/선우/source/repos/WorldAI/apps/worldai/src/sdk/README.md): Python/C# SDK 연동 가이드
-- [apps/worldai/harness/plans/phase_5_dashboard.md](file:///c:/Users/선우/source/repos/WorldAI/apps/worldai/harness/plans/phase_5_dashboard.md): Phase 5 완수 상세 보고 및 40,000 타일(200x200) 명세
 - [docs/](file:///c:/Users/선우/source/repos/WorldAI/docs/): 기획 및 기술 명세서 모음 (인구, 외교, 종교 등)
 - [docs/milestones/](file:///c:/Users/선우/source/repos/WorldAI/docs/milestones/): 완료된 주요 단계별 상세 리포트
 
