@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import random
 from typing import Callable
-from .models import RaceState, EventLog, AffinityLevel
+from .models import RaceState, EventLog
 
 # 몬스터 유형 테이블
 _MONSTER_TYPES = [
@@ -146,14 +146,7 @@ class EventSystem:
             if random.random() > aggressor.aggression * 0.15:
                 continue
 
-            # 가장 적대적인 대상 선택
-            candidates = [
-                (diplomacy_adjust.__self__.get(aggressor.id, r.id)  # type: ignore[attr-defined]
-                 if hasattr(diplomacy_adjust, "__self__") else -50,
-                 r)
-                for r in races.values()
-                if r.id != aggressor.id and r.is_alive
-            ]
+            # 가장 적대적인 대상 파악 (직접 호스트일 타겟 리스트 생성)
             # candidates 가져오는 더 안전한 방법: 클로저 기반
             # (diplomacy_adjust signature: (a, b, delta, reason, tick) → EventLog|None)
             # 여기서는 races에서 직접 필터링
@@ -260,7 +253,7 @@ class EventSystem:
 
         affected = random.sample(targets, affected_count)
         affected_ids = [r.id for r in affected]
-        total_loss = 0
+        total_loss = 0.0
 
         for race in affected:
             loss = race.population * loss_pct * random.uniform(0.5, 1.5)

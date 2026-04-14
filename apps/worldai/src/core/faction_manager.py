@@ -13,8 +13,10 @@ WorldAI Faction Manager
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
-from typing import Callable
+from typing import Callable, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .map import WorldMap
 
 from .models import (
     Faction, Character, Religion, EventLog,
@@ -458,7 +460,7 @@ class FactionManager:
         # 랜덤 이벤트 발생 결정
         roll = random.random()
         delta = 0.0
-        event_type = None
+        event_type = ""
         title = ""
         desc = ""
         
@@ -468,20 +470,20 @@ class FactionManager:
                 delta = random.uniform(20.0, 40.0)
                 event_type = "ALLIANCE_PROPOSED"
                 title = f"[외교] {faction.name} ↔ {target.name}: 동맹 맺음"
-                desc = f"같은 핏줄인 두 파벌이 힘을 합치기로 결의했습니다."
+                desc = "같은 핏줄인 두 파벌이 힘을 합치기로 결의했습니다."
         elif not is_same_race and roll < 0.05:
             # 국경 마찰 (전쟁/경계)
             if current_aff > -30.0:
                 delta = random.uniform(-20.0, -40.0)
                 event_type = "DIPLOMATIC_TENSION"
                 title = f"[분쟁] {faction.name} ↔ {target.name}: 국경 충돌"
-                desc = f"인접한 두 세력의 국경 수비대 간에 무력 충돌이 발생했습니다."
+                desc = "인접한 두 세력의 국경 수비대 간에 무력 충돌이 발생했습니다."
         elif roll < 0.03:
             # 무역상단 교류
             delta = random.uniform(5.0, 15.0)
             event_type = "TRADE_ROUTE_OPEN"
             title = f"[교역] {faction.name} ↔ {target.name}: 교역단 왕래"
-            desc = f"서로 간에 활발한 상단이 오가며 자원이 교환되고 우호도가 올랐습니다."
+            desc = "서로 간에 활발한 상단이 오가며 자원이 교환되고 우호도가 올랐습니다."
 
         if delta != 0.0:
             new_aff = max(-100.0, min(100.0, current_aff + delta))

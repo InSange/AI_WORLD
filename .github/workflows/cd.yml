@@ -1,0 +1,39 @@
+name: WorldAI CD
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    # 추후 Docker Hub 등 레지스트리 로그인 스텝 추가
+    # - name: Login to DockerHub
+    #   uses: docker/login-action@v3
+    #   with:
+    #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+    #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build Dashboard (Frontend)
+      run: |
+        cd apps/worldai/dashboard
+        # 추후 빌드 명령어: npm ci && npm run build
+        echo "Building dashboard..."
+
+    - name: Build Engine (Backend) Image
+      run: |
+        cd apps/worldai
+        # 예시 빌드 커맨드
+        # docker build -t worldai-engine:latest .
+        echo "Building backend image..."

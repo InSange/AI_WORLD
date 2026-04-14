@@ -15,6 +15,7 @@ WorldAI Race Agent
 from __future__ import annotations
 
 import random
+from typing import Callable
 from .models import Action, ActionType, RaceState, AffinityLevel, EventLog
 
 # 행동 발생 기본 확률 (틱당)
@@ -38,7 +39,7 @@ class RaceAgent:
         self,
         race: RaceState,
         all_races: dict[str, RaceState],
-        get_affinity: callable,   # (from_id, to_id) → float
+        get_affinity: Callable,   # (from_id, to_id) → float
     ) -> Action:
         """
         종족의 현재 상태 + 세계 상황 → 이번 틱의 행동 결정.
@@ -110,7 +111,7 @@ class RaceAgent:
         self,
         race: RaceState,
         others: dict[str, RaceState],
-        get_affinity: callable,
+        get_affinity: Callable,
     ) -> RaceState | None:
         """가장 위협적인 적대 종족 반환 (없으면 None)"""
         threats = []
@@ -129,7 +130,7 @@ class RaceAgent:
         self,
         race: RaceState,
         others: dict[str, RaceState],
-        get_affinity: callable,
+        get_affinity: Callable,
     ) -> RaceState | None:
         """교역 파트너 후보 반환 (친밀도 +20 이상, 고립성 낮은 상대)"""
         candidates = []
@@ -147,7 +148,7 @@ class RaceAgent:
         self,
         race: RaceState,
         others: dict[str, RaceState],
-        get_affinity: callable,
+        get_affinity: Callable,
     ) -> RaceState | None:
         """협상 대상 반환 (친밀도 -30 ~ +50 범위에서 동맹 가능성 있는 상대)"""
         candidates = []
@@ -168,7 +169,7 @@ class RaceAgent:
 def execute_action(
     action: Action,
     races: dict[str, RaceState],
-    diplomacy_adjust: callable,  # (from_id, to_id, delta, reason, tick) → EventLog|None
+    diplomacy_adjust: Callable,  # (from_id, to_id, delta, reason, tick) → EventLog|None
     tick: int,
 ) -> EventLog | None:
     """

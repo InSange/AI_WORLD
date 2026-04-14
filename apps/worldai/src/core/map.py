@@ -1,10 +1,11 @@
 from __future__ import annotations
 import random
-import math
-import opensimplex
+import opensimplex  # type: ignore[import-untyped]
 from enum import Enum
-from dataclasses import dataclass, field
-from typing import Optional, Any
+from dataclasses import dataclass
+from typing import Optional, Any, TYPE_CHECKING
+if TYPE_CHECKING:
+    from .faction_manager import Faction
 
 class TileType(str, Enum):
     WATER = "water"         # 0: 파란색 (West/South Hub)
@@ -34,7 +35,7 @@ class MapTile:
     population_density: float = 0.0  # 해당 타일의 인구 밀집도 표시용
 
 class WorldMap:
-    def __init__(self, width: int = 200, height: int = 200, unexplored_borders: dict = None):
+    def __init__(self, width: int = 200, height: int = 200, unexplored_borders: Optional[dict[str, bool]] = None):
         self.width = width
         self.height = height
         self.unexplored_borders = unexplored_borders or {"north": True, "south": False, "east": False, "west": False}
@@ -126,29 +127,36 @@ class WorldMap:
             # 더운 기후 (사막과 황무지 위주)
             # 알록달록함을 줄이기 위해 열대 지형(Tropical)을 삭제!
             # 아주 건조하면 사막, 약간 건조하면 황무지, 습도가 높으면 오히려 주변과 어울리는 '평원(Plains)'으로 처리.
-            if moisture < 0.45: return TileType.DESERT
-            elif moisture < 0.70: return TileType.WASTELAND
-            else: return TileType.PLAINS
+            if moisture < 0.45:
+                return TileType.DESERT
+            elif moisture < 0.70:
+                return TileType.WASTELAND
+            else:
+                return TileType.PLAINS
             
         else:
             # 온대 기후 (중앙 대평원 베이스)
             # 사용자의 피드백 1: 동/서 쪽에 울창한 숲 비중 버프
             # 사용자의 피드백 2: 칼로 자른듯한 일직선(x > 0.7)을 없애기 위해 습도에 완만한 그라데이션 가중치 부여
             m_boost = 0.0
-            if nx > 0.6: m_boost = (nx - 0.6) * 0.6  # 동쪽으로 갈수록 천천히 습해짐 (최대 +0.24)
-            if nx < 0.4: m_boost = (0.4 - nx) * 0.6  # 서쪽으로 갈수록 천천히 습해짐 (최대 +0.24)
+            if nx > 0.6:
+                m_boost = (nx - 0.6) * 0.6  # 동쪽으로 갈수록 천천히 습해짐 (최대 +0.24)
+            if nx < 0.4:
+                m_boost = (0.4 - nx) * 0.6  # 서쪽으로 갈수록 천천히 습해짐 (최대 +0.24)
             
             final_moisture = moisture + m_boost
             
-            if final_moisture > 0.55: return TileType.FOREST
-            else: return TileType.PLAINS
+            if final_moisture > 0.55:
+                return TileType.FOREST
+            else:
+                return TileType.PLAINS
 
     def get_tile(self, x: int, y: int) -> Optional[MapTile]:
         if 0 <= x < self.width and 0 <= y < self.height:
             return self.tiles[y][x]
         return None
 
-    def find_suitable_location(self, preferred_biomes: list[str], occupied_spots: list[tuple[int, int]] = None, min_dist: float = 10.0) -> tuple[int, int]:
+    def find_suitable_location(self, preferred_biomes: list[str], occupied_spots: Optional[list[tuple[int, int]]] = None, min_dist: float = 10.0) -> tuple[int, int]:
         """
         선호하는 군계(Biome) 목록 중 하나에 해당하는 타일을 무작위로 찾아 반환한다.
         찾지 못하면 점진적으로 아무 육지나 반환하며, 기존 스폰들과 겹치지 않도록 min_dist 거리를 유지하려 시도.
@@ -163,7 +171,8 @@ class WorldMap:
         for y in range(self.height):
             for x in range(self.width):
                 t = self.get_tile(x, y)
-                if not t: continue
+                if not t:
+                    continue
                 # बा다/호수는 수중 종족 지정이 없으면 기본 스폰 금지
                 is_water = t.tile_type.value in ("water", "lake")
                 if is_water and t.tile_type.value not in preferred_biomes:
@@ -175,7 +184,8 @@ class WorldMap:
                     candidates.append((x, y))
                     
         def get_best_spot(spots):
-            if not spots: return None
+            if not spots:
+                return None
             # 랜덤 셔플 후 거리체크
             random.shuffle(spots)
             for sx, sy in spots:
@@ -192,11 +202,13 @@ class WorldMap:
             return spots[0]
             
         best = get_best_spot(candidates)
-        if best: return best
+        if best:
+            return best
         
         # 2. 선호 군계를 못 찾으면 차선책(아무 육지)에서 거리가 있는 곳
         best_fallback = get_best_spot(fallback_candidates)
-        if best_fallback: return best_fallback
+        if best_fallback:
+            return best_fallback
         
         # 3. 정 안되면 그냥 정중앙 부근 리턴
         return (self.width // 2, self.height // 2)
@@ -206,7 +218,7 @@ class WorldMap:
         if tile:
             tile.faction_id = faction_id
 
-    def to_summary_dict(self, factions: list["Faction"] = None) -> dict[str, Any]:
+    def to_summary_dict(self, factions: Optional[list["Faction"]] = None) -> dict[str, Any]:
         """대시보드 전송용 압축 데이터 (지형 인덱스 + 영토 인덱스)"""
         type_to_idx = {t.value: i for i, t in enumerate(TileType)}
         flattened_tiles = []

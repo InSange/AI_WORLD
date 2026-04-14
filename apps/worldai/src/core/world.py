@@ -14,6 +14,8 @@ WorldAI World Engine
 """
 from __future__ import annotations
 
+# ruff: noqa: E402
+
 import sys
 from pathlib import Path
 from dataclasses import dataclass, field
@@ -26,9 +28,7 @@ if str(_APP_ROOT) not in sys.path:
     sys.path.insert(0, str(_APP_ROOT))
 
 from src.core.models import (
-    Season, RaceState, AffinityLevel, Action, ActionType,
-    EventLog, TickResult, DayPhase, TimeConfig, SettlementScale,
-    PopulationSegment,
+    Season, RaceState, AffinityLevel, Action, EventLog, TickResult, DayPhase, TimeConfig,
 )
 from src.core.diplomacy import DiplomacySystem
 from src.core.race_agent import RaceAgent, execute_action
@@ -231,7 +231,7 @@ class World:
                 tick=self.tick,
                 event_type="SEASON_CHANGE",
                 title=f"[계절] {self.season.display()} 시작 (Year {self.year})",
-                description=f"새 계절이 시작됩니다. 계절 효과가 적용됩니다.",
+                description="새 계절이 시작됩니다. 계절 효과가 적용됩니다.",
                 affected_races=[r.id for r in self.active_races],
             )
             events.append(season_event)
@@ -246,7 +246,6 @@ class World:
                 affected_races=[],
             ))
 
-        pop_mod  = SEASON_POP_MODIFIER[self.season]
         tech_mod = SEASON_TECH_MODIFIER[self.season]
 
         # 2. 인구 변화 ─────────────────────────────

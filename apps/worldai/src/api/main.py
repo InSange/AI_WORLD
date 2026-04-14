@@ -25,6 +25,7 @@ _APP_ROOT = Path(__file__).parent.parent.parent  # apps/worldai/
 if str(_APP_ROOT) not in sys.path:
     sys.path.insert(0, str(_APP_ROOT))
 
+# ruff: noqa: E402
 from src.core.world import World
 from src.core.faction_manager import FactionManager
 from src.core.models import AffiliationType
@@ -34,7 +35,7 @@ from src.core.models import AffiliationType
 
 def _setup_default_factions(world: World, fm: FactionManager) -> None:
     """선호 지형 기반 파벌 동적 배치"""
-    occupied_spots = []
+    occupied_spots: list[tuple[int, int]] = []
     
     def spawn(f_id, name, race_id, pop, affil=AffiliationType.INDEPENDENT, parent=None, rel=None, specs=None):
         race = world.races.get(race_id)
@@ -95,7 +96,7 @@ async def lifespan(app: FastAPI):
     # 전체 계산(get_territory_data) 결과를 캐시에 세팅해야 한다.
     all_factions = faction_manager.all_factions()
     faction_manager._territory_cache = world.map.get_territory_data(all_factions)  # type: ignore[attr-defined]
-    print(f"🗺️  영토 캐시 초기화 완료 ({len(faction_manager._territory_cache)} 타일)")
+    print(f"🗺️  영토 캐시 초기화 완료 ({len(faction_manager._territory_cache)})")  # type: ignore[attr-defined]
 
     print("✅ 시뮬레이션 초기화 완료\n")
 
@@ -157,7 +158,6 @@ async def websocket_endpoint(websocket: WebSocket):
     
     # ── 초기 데이터 전송 (Snapshot)
     try:
-        from src.api.routes.world import get_world
         # Request 객체가 없으므로 직접 호출하거나 스키마로 변환
         # 여기서는 단순화하여 틱 정보만 우선 전송
         world = websocket.app.state.world

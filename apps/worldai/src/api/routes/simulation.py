@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Request, HTTPException, Query
 from src.api.schemas import SimulationStatusSchema, TickResultSchema, EventSchema, MessageResponse
-from src.core.models import AffinityLevel
 from src.api.websocket_manager import manager
 
 router = APIRouter()
@@ -207,7 +206,6 @@ async def reset_simulation(req: Request):
     """
     from src.core.world import World
     from src.core.faction_manager import FactionManager
-    from src.core.models import AffiliationType
 
     world = World.from_config("asteria")
     fm = FactionManager()

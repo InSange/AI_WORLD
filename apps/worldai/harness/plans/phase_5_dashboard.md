@@ -16,7 +16,7 @@
 - **Scaffold**: Vite (`apps/worldai/dashboard/`)
 - **State Management**: React Context 또는 단순 `useEffect` 기반 WS 수신.
 - **Components**:
-    - `MapViewer`: Canvas API 기반 100x100 그리드 렌더링.
+    - `MapViewer`: Canvas API 기반 200x200 그리드 렌더링.
     - `EventLog`: Framer Motion 애니메이션이 적용된 실시간 피드.
     - `RaceStats`: Recharts 기반 인구/군사력/기술력 시계열 차트.
 
@@ -25,7 +25,7 @@
 ## 2. 세부 구현 로직
 
 ### 2.1 맵 시각화 (MapCanvas)
-- 10,000개 타일을 효율적으로 그리기 위해 Canvas API 사용.
+- 40,000개 타일(200x200)을 효율적으로 그리기 위해 Canvas API 사용.
 - 지형 타입별 색상 팔레트 완비 (9종 지형 범례).
 - 파벌 거점(Capital) 다이아몬드 마커 및 종족별 고유 색상 적용.
 - **영토-거점 하이라이트**: 영토 호버 시 해당 파벌의 본성과 점선 및 펄스 효과로 연결.
@@ -71,7 +71,7 @@
 - [x] 프론트엔드: MapCanvas 시각화 2.0 (거점 마커, 하이라이트 연결) 개발
 - [x] 프론트엔드: TileInspector 상세 정보 패널 구현
 - [x] 프론트엔드: 실시간 이벤트 피드 및 범례(Legend) 개발
-- [x] 통합: 100x100 전체 그리드에 대한 정밀 마우스 좌표 인식 최적화
+- [x] 통합: 200x200 전체 그리드에 대한 정밀 마우스 좌표 인식 최적화
 - [x] 혁신: 중점(Hub) 기반 방사형 지형 생성 알고리즘 도입
 - [x] 고도화: 백엔드-프론트엔드 지형 인덱스(0:Water...) 동기화 완료
 

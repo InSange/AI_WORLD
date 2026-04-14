@@ -1,7 +1,7 @@
 # WorldAI — Phase 상태 트래커
 
-> **마지막 업데이트**: 2026-04-11
-> **현재 Phase**: Phase 5.5 완료 (Snapshot-after-Commit·Dirty Region 최적화 구현)
+> **마지막 업데이트**: 2026-04-15
+> **현재 Phase**: Phase 6 완료 (CI/CD 자동화 및 정적 분석 통과)
 
 ---
 
@@ -20,7 +20,7 @@
 | Phase 4.7 | 영토 기반 인구 & 그리드 시스템 | ✅ 완료 | #12 |
 | Phase 5 | 웹 대시보드 (실시간 시각화 2.0) | ✅ 완료 | #13~#15 |
 | Phase 5.5 | 성능 최적화 (Snapshot-after-Commit·Dirty Region) | ✅ 완료 | #16 |
-| Phase 6 | CI/CD 구축 | ⬜ 대기 | - |
+| Phase 6 | CI/CD 구축 (Ruff, Mypy, Actions, Docker) | ✅ 완료 | 머지 전 |
 | Phase 7 | Plugin SDK | ⬜ 대기 | - |
 
 ---
@@ -38,7 +38,7 @@ apps/worldai/src/core/
   faction_manager.py - 파벌 CRUD + 종교 교세 + 초월자
 
 apps/worldai/src/api/
-  main.py           - FastAPI 앱 (lifespan, CORS, 기본 파벌 11종)
+  main.py           - FastAPI 앱 (lifespan, CORS, 기본 파벌 13종)
   schemas.py        - Pydantic 응답 스키마
   routes/
     simulation.py   - POST /tick, /run, /reset
@@ -116,16 +116,28 @@ docs/
 
 ---
 
-## 🔜 Phase 6 — CI/CD 구축 (준비 중)
+## ✅ Phase 6 — CI/CD 자동화 및 통제 환경 구축
+
+### 구현 내용
+| 항목              | 설명                                                                 |
+| ----------------- | -------------------------------------------------------------------- |
+| **정적 분석 보수**| `ruff`(린팅) 및 `mypy`(타입 무결성) 전면 검사 및 에러율 0 달성        |
+| **GitHub Actions**| `/workflows/ci.yml` (테스트 자동화), `cd.yml` (배포 뼈대) 구축        |
+| **도커화(Docker)**| `Dockerfile`, `docker-compose.yml`을 통한 멀티 컨테이너 원클릭 인프라 |
+| **유닛 테스트**   | `pytest` 적용, `get_territory_delta` 최적화 로직의 부분 갱신 검증 완료 |
+
+---
+
+## 🔜 Phase 7 — 플러그인 SDK 연동 (준비 중)
 
 ### 목표
-GitHub Actions를 이용한 자동화된 워크플로우 구축 전반.
+유니티/언리얼/C++ 커스텀 엔진 등 외부 시스템에서 WorldAI 코어를 제어할 수 있는 SDK 및 API 확충.
 
 ### 계획
-- **자동 테스트**: `pytest`를 통한 코어 엔진 및 API 자동 검증
-- **빌드 파이프라인**: 대시보드(Frontend) 정적 빌드 및 배포 자동화
-- **정적 분석**: `flake8`, `mypy`, `eslint`를 통한 코드 품질 관리
-- **도커화**: 전체 시스템(FastAPI + Dashboard) Docker 컨테이너화 고려
+- Plugin SDK 인터페이스 초안 작성
+- 웹소켓 연동 C#/C++ 클라이언트 예제 로직 구성
+- 타 엔진과 API 호출 및 페이로드 교환 안정성 테스트
+
 
 ---
 
@@ -182,19 +194,14 @@ GET  /player/grid-view         - 반경 N타일 현황
 ## 📝 AI 인수인계 메모
 
 ```
-[Phase 5.5 완료 — 2026-04-11]
-맵 200x200 확정. Snapshot-after-Commit / Dirty Region / Delta Payload 3중 최적화 구현 완료.
+[Phase 6 완료 — 2026-04-15]
+Ruff, Mypy 분석 100% 통과, Pytest 통한 delta 페이로드 동작 확인. Dockerize 완료.
 
 ⚠️ 핵심 확인 사항:
-  1. 지형 Enum 동기화: map.py TileType 순서 ↔ MapCanvas.tsx TILE_COLORS(0:Water...) 반드시 일치.
-  2. 맵 크기: default_world.yaml width/height = 200 확인 (변경 시 프론트 좌표 정규화 깨짐).
-  3. 영토 캐시: fm._territory_cache 초기화 전 get_territory_data() 전체 계산 1회 필요.
-     → main.py lifespan 및 /reset 엔드포인트에서 초기 캐시 세팅 완료.
-  4. territory_delta: WebSocket UPDATE 메시지에 포함. 클라이언트 미처리 시 무시해도 무방
-     (REST /world/tiles 호출로 전체 재동기화 가능).
+  1. mypy를 통과하기 위한 옵셔널 타입, 묵시적 반환 타입 전면 교체 완료
+  2. Github Actions는 `main` 브랜치 PR/푸쉬 시 구동.
 
-다음 구현 순서 (Phase 6):
-  1. ✅ main.py lifespan + /reset에 _territory_cache 초기 세팅 완료
-  2. GitHub Actions 워크플로우 (.github/workflows/)
-  3. pytest 단위 테스트 보강 (get_territory_delta 포함)
+다음 구현 순서 (Phase 7):
+  1. 외부 세계 엔진 연동을 위한 플러그인용 REST/WS API 고도화
+  2. Plugin SDK 개발
 ```

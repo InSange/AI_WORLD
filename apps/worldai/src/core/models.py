@@ -45,12 +45,18 @@ class AffinityLevel(str, Enum):
 
     @staticmethod
     def from_value(v: float) -> "AffinityLevel":
-        if v <= -61: return AffinityLevel.WAR
-        if v <= -31: return AffinityLevel.HOSTILE
-        if v <= -11: return AffinityLevel.COLD
-        if v <=  19: return AffinityLevel.NEUTRAL
-        if v <=  49: return AffinityLevel.FRIEND
-        if v <=  79: return AffinityLevel.ALLIED
+        if v <= -61:
+            return AffinityLevel.WAR
+        if v <= -31:
+            return AffinityLevel.HOSTILE
+        if v <= -11:
+            return AffinityLevel.COLD
+        if v <=  19:
+            return AffinityLevel.NEUTRAL
+        if v <=  49:
+            return AffinityLevel.FRIEND
+        if v <=  79:
+            return AffinityLevel.ALLIED
         return AffinityLevel.BOND
 
 
@@ -86,11 +92,16 @@ class SettlementScale(str, Enum):
 
     @staticmethod
     def from_population(pop: float) -> "SettlementScale":
-        if pop <= 50:   return SettlementScale.OUTPOST
-        if pop <= 500:  return SettlementScale.VILLAGE
-        if pop <= 2000: return SettlementScale.TOWN
-        if pop <= 5000: return SettlementScale.CITY
-        if pop <= 15000: return SettlementScale.KINGDOM
+        if pop <= 50:
+            return SettlementScale.OUTPOST
+        if pop <= 500:
+            return SettlementScale.VILLAGE
+        if pop <= 2000:
+            return SettlementScale.TOWN
+        if pop <= 5000:
+            return SettlementScale.CITY
+        if pop <= 15000:
+            return SettlementScale.KINGDOM
         return SettlementScale.EMPIRE
 
 
@@ -458,10 +469,14 @@ class DayPhase(str, Enum):
     @staticmethod
     def from_hour(hour: int) -> "DayPhase":
         """0~23시 → DayPhase 변환"""
-        if hour < 4:  return DayPhase.DEEP_NIGHT
-        if hour < 7:  return DayPhase.DAWN
-        if hour < 17: return DayPhase.DAY
-        if hour < 20: return DayPhase.DUSK
+        if hour < 4:
+            return DayPhase.DEEP_NIGHT
+        if hour < 7:
+            return DayPhase.DAWN
+        if hour < 17:
+            return DayPhase.DAY
+        if hour < 20:
+            return DayPhase.DUSK
         return DayPhase.NIGHT
 
 
@@ -571,9 +586,12 @@ class TimeConfig:
 
     @property
     def ticks_per_day(self) -> int:
-        if self.tick_unit == "hour":    return self.hours_per_day
-        if self.tick_unit == "day":     return 1
-        if self.tick_unit == "minute":  return self.hours_per_day * 60
+        if self.tick_unit == "hour":
+            return self.hours_per_day
+        if self.tick_unit == "day":
+            return 1
+        if self.tick_unit == "minute":
+            return self.hours_per_day * 60
         return self.hours_per_day
 
     @property

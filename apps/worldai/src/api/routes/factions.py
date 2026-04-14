@@ -27,17 +27,17 @@ def _fm(req: Request):
 def _faction_to_schema(faction) -> FactionSchema:
     leader_schema = None
     if faction.leader:
-        l = faction.leader
+        ldr = faction.leader
         leader_schema = LeaderSchema(
-            id=l.id, name=l.name, race=l.race,
-            title=l.title, title_type=l.title_type.value,
-            grade=l.grade, level=l.level,
-            is_transcendent=l.is_transcendent,
+            id=ldr.id, name=ldr.name, race=ldr.race,
+            title=ldr.title, title_type=ldr.title_type.value,
+            grade=ldr.grade, level=ldr.level,
+            is_transcendent=ldr.is_transcendent,
             transcendent_type=(
-                l.transcendent.transcendent_type.value if l.transcendent else None
+                ldr.transcendent.transcendent_type.value if ldr.transcendent else None
             ),
-            loyalty=round(l.loyalty, 2),
-            ambition=round(l.ambition, 2),
+            loyalty=round(ldr.loyalty, 2),
+            ambition=round(ldr.ambition, 2),
         )
     return FactionSchema(
         id=faction.id,
@@ -81,7 +81,6 @@ async def list_factions(
     factions = fm.top_level_factions() if top_level_only else fm.all_factions()
 
     if scale:
-        from src.core.models import SettlementScale
         factions = [f for f in factions if f.scale.value == scale]
 
     return FactionListSchema(

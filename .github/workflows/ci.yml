@@ -1,0 +1,42 @@
+name: WorldAI CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/worldai
+        
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+        cache: "pip"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ruff mypy pytest httpx typing-extensions types-PyYAML
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Lint with Ruff
+      run: |
+        python -m ruff check src/
+
+    - name: Type check with Mypy
+      run: |
+        python -m mypy src/
+
+    - name: Run Tests
+      # PYTHONPATH 셋팅 후 pytest 실행
+      run: |
+        PYTHONPATH=../../ pytest tests/ -v
