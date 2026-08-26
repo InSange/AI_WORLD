@@ -2,7 +2,7 @@
 
 > **판타지 세계관 AI 시뮬레이션 시스템** — 오픈소스 범용 세계관 엔진
 
-[![CI](https://github.com/your-org/WorldAI/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/WorldAI/actions)
+[![CI](https://github.com/InSange/AI_WORLD/actions/workflows/ci.yml/badge.svg)](https://github.com/InSange/AI_WORLD/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 
@@ -31,7 +31,7 @@ REST API를 통해 Unity, Unreal, NuNuEngine, C++ 등 어디서든 플러그인�
 - 🔌 **플러그인 구조**: REST API로 Unity/C++ 등 외부 엔진 연동
 - 📊 **웹 대시보드**: 실시간 세계 현황 시각화
 - 🗺️ **그리드 맵**: 200x200 격자 기반 지형 및 영토 시뮬레이션 (40,000 타일)
-- 🔄 **CI/CD**: GitHub Actions 자동 테스트·배포
+- 🔄 **CI**: GitHub Actions 기반 자동 테스트·정적 분석 (CD는 파이프라인 골격만 구성)
 
 ---
 
@@ -50,8 +50,8 @@ REST API를 통해 Unity, Unreal, NuNuEngine, C++ 등 어디서든 플러그인�
 
 ```bash
 # 1. 클론
-git clone https://github.com/your-org/WorldAI.git
-cd WorldAI/apps/worldai
+git clone https://github.com/InSange/AI_WORLD.git
+cd AI_WORLD/apps/worldai
 
 # 2. 의존성 설치
 pip install -r requirements.txt
@@ -72,17 +72,30 @@ cd dashboard && npm install && npm run dev
 
 ```csharp
 // Unity에서 WorldAI 사용 예시
+using WorldAI.SDK;
+
 var client = new WorldAIClient("http://localhost:8000");
-var worldState = await client.GetWorldStateAsync();
-var raceStatus = await client.GetRaceAsync("human");
+string world    = await client.GetWorldAsync();
+string factions = await client.GetFactionsAsync();
+await client.TickAsync(hours: 10);
 ```
 
 ```python
-# Python에서 직접 사용
-from worldai import World
-world = World.from_config("configs/worlds/default_world.yaml")
-world.tick()  # 시간 1틱 진행
-print(world.get_race("human").population)
+# Python SDK로 API 서버에 접속 (apps/worldai 에서 실행)
+from src.sdk.python.worldai_client import WorldAIClient
+
+client = WorldAIClient("http://localhost:8000")
+factions = await client.get_factions()
+await client.tick(hours=10)
+```
+
+```python
+# 서버 없이 시뮬레이션 코어를 직접 사용
+from src.core.world import World
+
+world = World.from_config("asteria")   # configs/worlds/ 의 world_id
+world.tick_world()                     # 1틱(=1시간) 진행
+world.print_status()
 ```
 
 ---
@@ -119,7 +132,7 @@ WorldAI/
 - [x] Phase 4.7: 영토 기반 인구 & 그리드 맵 (200x200)
 - [x] Phase 5: 웹 대시보드 (React/TS 실시간 시각화)
 - [x] Phase 5.5: 성능 최적화 (Snapshot-after-Commit·Dirty Region·Delta Payload)
-- [x] Phase 6: CI/CD 구축
+- [x] Phase 6: CI 구축 (테스트·정적 분석) / CD 파이프라인 골격
 - [x] Phase 7: Plugin SDK (Python, C#)
 
 ---
