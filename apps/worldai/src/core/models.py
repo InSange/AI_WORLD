@@ -10,7 +10,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-
 # ─────────────────────────────────
 # Enums
 # ─────────────────────────────────
@@ -44,7 +43,7 @@ class AffinityLevel(str, Enum):
         return labels[self.value]
 
     @staticmethod
-    def from_value(v: float) -> "AffinityLevel":
+    def from_value(v: float) -> AffinityLevel:
         if v <= -61:
             return AffinityLevel.WAR
         if v <= -31:
@@ -91,7 +90,7 @@ class SettlementScale(str, Enum):
         return labels[self.value]
 
     @staticmethod
-    def from_population(pop: float) -> "SettlementScale":
+    def from_population(pop: float) -> SettlementScale:
         if pop <= 50:
             return SettlementScale.OUTPOST
         if pop <= 500:
@@ -285,8 +284,7 @@ class TickResult:
         for rid, delta in self.population_changes.items():
             if abs(delta) > 0.5:
                 lines.append(f"  {rid}: 인구 {delta:+.1f}")
-        for e in self.events:
-            lines.append(f"  🔔 {e.title}")
+        lines.extend(f"  🔔 {e.title}" for e in self.events)
         return "\n".join(lines)
 
 
@@ -467,7 +465,7 @@ class DayPhase(str, Enum):
         return labels[self.value]
 
     @staticmethod
-    def from_hour(hour: int) -> "DayPhase":
+    def from_hour(hour: int) -> DayPhase:
         """0~23시 → DayPhase 변환"""
         if hour < 4:
             return DayPhase.DEEP_NIGHT
@@ -547,7 +545,7 @@ class PopulationSegment:
         return self.pop_type == PopulationType.MILITARY
 
     @staticmethod
-    def distribute(total_pop: float, scale: "SettlementScale") -> "list[PopulationSegment]":
+    def distribute(total_pop: float, scale: SettlementScale) -> list[PopulationSegment]:
         """
         총 인구를 규모에 따라 유동 타입별로 분배한다.
         군집 규모가 클수록 군인 비율이 높아진다.

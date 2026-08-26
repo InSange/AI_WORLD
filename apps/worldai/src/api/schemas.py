@@ -5,9 +5,10 @@ FastAPI 엔드포인트의 요청/응답 Pydantic 모델.
 타입 안전하고 자동 문서화(OpenAPI)가 지원된다.
 """
 from __future__ import annotations
-from pydantic import BaseModel, Field
+
 from typing import Any
 
+from pydantic import BaseModel, Field
 
 # ── 종족 상태 ─────────────────────────────────
 

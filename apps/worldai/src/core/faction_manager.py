@@ -13,16 +13,24 @@ WorldAI Faction Manager
 from __future__ import annotations
 
 import random
-from typing import Callable, Optional, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .map import WorldMap
 
 from .models import (
-    Faction, Character, Religion, EventLog,
-    AffiliationType, SettlementScale, DeityType,
-    TitleType, TranscendentInfo, TranscendentType,
+    AffiliationType,
+    Character,
+    DeityType,
+    EventLog,
+    Faction,
     PopulationSegment,
+    Religion,
+    SettlementScale,
+    TitleType,
+    TranscendentInfo,
+    TranscendentType,
 )
 
 # ── 기본 종교 데이터 ───────────────────────────────────
@@ -240,7 +248,7 @@ class FactionManager:
         get_race_growth: Callable[[str], float],  # race_id → growth_rate
         season_pop_mod: float,
         tick: int,
-        world_map: Optional["WorldMap"] = None,
+        world_map: WorldMap | None = None,
     ) -> list[EventLog]:
         """매 틱 파벌 상태 갱신"""
         events: list[EventLog] = []
@@ -326,7 +334,7 @@ class FactionManager:
         race_titles = _RACE_LEADER_TITLE.get(race, {})
         return race_titles.get(scale, "지도자")
 
-    def _handle_migration(self, faction: Faction, world_map: Optional["WorldMap"]) -> None:
+    def _handle_migration(self, faction: Faction, world_map: WorldMap | None) -> None:
         """파벌 내 유동 인구(상인, 모험가 등)의 이동 처리"""
         for segment in faction.population_segments:
             if not segment.can_travel:
@@ -360,7 +368,7 @@ class FactionManager:
                 segment.count += count
                 return
         # 해당 타입이 없으면 추가
-        from .models import PopulationType, PopulationSegment
+        from .models import PopulationSegment, PopulationType
         faction.population_segments.append(PopulationSegment(PopulationType(pop_type), count))
 
     def _spread_religion(self, faction: Faction, tick: int) -> EventLog | None:
@@ -410,31 +418,30 @@ class FactionManager:
         """이주/탐험으로 새 마을 자동 생성 시뮬레이션 (낮은 확률)"""
         events: list[EventLog] = []
         for faction in self.all_factions():
-            # 큰 파벌(kingdom 이상)에서 이주민 파생 가능
-            if faction.scale in (SettlementScale.KINGDOM, SettlementScale.EMPIRE):
-                if random.random() < 0.02:  # 2% 확률
-                    new_id = f"{faction.id}_settlement_{tick}"
-                    pop = random.uniform(60, 150)
-                    new_faction = self.create_faction(
-                        faction_id=new_id,
-                        name=f"{faction.name} 개척지",
-                        race=faction.race,
-                        region=faction.region,
-                        population=pop,
-                        affiliation=AffiliationType.COLONY,
-                        parent_id=faction.id,
-                        location=(
-                            faction.location_x + random.randint(-10, 10),
-                            faction.location_y + random.randint(-10, 10),
-                        ),
-                    )
-                    events.append(EventLog(
-                        tick=tick,
-                        event_type="FACTION_SPAWN",
-                        title=f"🏘️ 신규 정착지: {new_faction.name}",
-                        description=f"{faction.name}에서 이주민 {int(pop)}명이 갈라져 새 정착지를 세웠다.",
-                        affected_races=[faction.race],
-                    ))
+            # 큰 파벌(kingdom 이상)에서 2% 확률로 이주민 파생
+            if faction.scale in (SettlementScale.KINGDOM, SettlementScale.EMPIRE) and random.random() < 0.02:
+                new_id = f"{faction.id}_settlement_{tick}"
+                pop = random.uniform(60, 150)
+                new_faction = self.create_faction(
+                    faction_id=new_id,
+                    name=f"{faction.name} 개척지",
+                    race=faction.race,
+                    region=faction.region,
+                    population=pop,
+                    affiliation=AffiliationType.COLONY,
+                    parent_id=faction.id,
+                    location=(
+                        faction.location_x + random.randint(-10, 10),
+                        faction.location_y + random.randint(-10, 10),
+                    ),
+                )
+                events.append(EventLog(
+                    tick=tick,
+                    event_type="FACTION_SPAWN",
+                    title=f"🏘️ 신규 정착지: {new_faction.name}",
+                    description=f"{faction.name}에서 이주민 {int(pop)}명이 갈라져 새 정착지를 세웠다.",
+                    affected_races=[faction.race],
+                ))
         return events
 
     def _handle_faction_diplomacy(self, faction: Faction, tick: int) -> EventLog | None:

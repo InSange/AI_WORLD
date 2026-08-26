@@ -14,11 +14,9 @@ WorldAI World Engine
 """
 from __future__ import annotations
 
-# ruff: noqa: E402
-
 import sys
-from pathlib import Path
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 # 프로젝트 루트를 sys.path에 추가
@@ -27,14 +25,20 @@ _PROJECT_ROOT = _APP_ROOT.parent.parent                  # WorldAI/
 if str(_APP_ROOT) not in sys.path:
     sys.path.insert(0, str(_APP_ROOT))
 
-from src.core.models import (
-    Season, RaceState, AffinityLevel, Action, EventLog, TickResult, DayPhase, TimeConfig,
-)
 from src.core.diplomacy import DiplomacySystem
-from src.core.race_agent import RaceAgent, execute_action
 from src.core.event_system import EventSystem
 from src.core.map import WorldMap
-
+from src.core.models import (
+    Action,
+    AffinityLevel,
+    DayPhase,
+    EventLog,
+    RaceState,
+    Season,
+    TickResult,
+    TimeConfig,
+)
+from src.core.race_agent import RaceAgent, execute_action
 
 # ── 계절 설정 ───────────────────────────────
 
@@ -152,9 +156,9 @@ class World:
     # ── 생성자 ───────────────────────
 
     @classmethod
-    def from_config(cls, world_id: str = "asteria") -> "World":
+    def from_config(cls, world_id: str = "asteria") -> World:
         """YAML 설정에서 World 생성"""
-        from src.config.loader import load_world, load_all_races
+        from src.config.loader import load_all_races, load_world
 
         world_cfg = load_world(world_id)
         
@@ -377,3 +381,11 @@ class World:
             for (a, b), val in sorted(notable, key=lambda x: x[1]):
                 level = AffinityLevel.from_value(val).display()
                 print(f"    {a:12} → {b:12}: {val:+6.1f} ({level})")
+
+
+if __name__ == "__main__":
+    # python -m src.core.world 로 30틱 시뮬레이션을 돌려 결과를 출력한다.
+    _world = World.from_config("asteria")
+    for _ in range(30):
+        _world.tick_world()
+    _world.print_status()

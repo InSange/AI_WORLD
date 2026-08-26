@@ -25,7 +25,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install ruff mypy pytest httpx typing-extensions types-PyYAML
+        # ruff 는 버전이 오르면 기본 규칙셋이 넓어져 코드 변경 없이 CI 가 깨진다.
+        # ruff.toml 에 검사 규칙을 명시해 두었고, 여기서 마이너 버전도 고정한다.
+        pip install "ruff>=0.16,<0.17" mypy pytest httpx typing-extensions types-PyYAML
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Lint with Ruff

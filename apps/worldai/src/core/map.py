@@ -1,9 +1,12 @@
 from __future__ import annotations
+
 import random
-import opensimplex  # type: ignore[import-untyped, import-not-found]
-from enum import Enum
 from dataclasses import dataclass
-from typing import Optional, Any, TYPE_CHECKING
+from enum import Enum
+from typing import TYPE_CHECKING, Any
+
+import opensimplex  # type: ignore[import-untyped, import-not-found]
+
 if TYPE_CHECKING:
     from .faction_manager import Faction
 
@@ -31,11 +34,11 @@ class MapTile:
     x: int
     y: int
     tile_type: TileType
-    faction_id: Optional[str] = None
+    faction_id: str | None = None
     population_density: float = 0.0  # 해당 타일의 인구 밀집도 표시용
 
 class WorldMap:
-    def __init__(self, width: int = 200, height: int = 200, unexplored_borders: Optional[dict[str, bool]] = None):
+    def __init__(self, width: int = 200, height: int = 200, unexplored_borders: dict[str, bool] | None = None):
         self.width = width
         self.height = height
         self.unexplored_borders = unexplored_borders or {"north": True, "south": False, "east": False, "west": False}
@@ -151,12 +154,12 @@ class WorldMap:
             else:
                 return TileType.PLAINS
 
-    def get_tile(self, x: int, y: int) -> Optional[MapTile]:
+    def get_tile(self, x: int, y: int) -> MapTile | None:
         if 0 <= x < self.width and 0 <= y < self.height:
             return self.tiles[y][x]
         return None
 
-    def find_suitable_location(self, preferred_biomes: list[str], occupied_spots: Optional[list[tuple[int, int]]] = None, min_dist: float = 10.0) -> tuple[int, int]:
+    def find_suitable_location(self, preferred_biomes: list[str], occupied_spots: list[tuple[int, int]] | None = None, min_dist: float = 10.0) -> tuple[int, int]:
         """
         선호하는 군계(Biome) 목록 중 하나에 해당하는 타일을 무작위로 찾아 반환한다.
         찾지 못하면 점진적으로 아무 육지나 반환하며, 기존 스폰들과 겹치지 않도록 min_dist 거리를 유지하려 시도.
@@ -218,13 +221,12 @@ class WorldMap:
         if tile:
             tile.faction_id = faction_id
 
-    def to_summary_dict(self, factions: Optional[list["Faction"]] = None) -> dict[str, Any]:
+    def to_summary_dict(self, factions: list[Faction] | None = None) -> dict[str, Any]:
         """대시보드 전송용 압축 데이터 (지형 인덱스 + 영토 인덱스)"""
         type_to_idx = {t.value: i for i, t in enumerate(TileType)}
-        flattened_tiles = []
-        for row in self.tiles:
-            for tile in row:
-                flattened_tiles.append(type_to_idx[tile.tile_type.value])
+        flattened_tiles = [
+            type_to_idx[tile.tile_type.value] for row in self.tiles for tile in row
+        ]
         
         result = {
             "width": self.width,
@@ -238,7 +240,7 @@ class WorldMap:
 
         return result
 
-    def get_territory_data(self, factions: list["Faction"]) -> list[int]:
+    def get_territory_data(self, factions: list[Faction]) -> list[int]:
         """
         영향력 기반 영토 지도를 생성한다. (전체 재계산 — 초기 로드 또는 강제 리프레시용)
         - 영향력 = pop^0.4 * 10 / (dist² + 1)
@@ -271,7 +273,7 @@ class WorldMap:
 
     def get_territory_delta(
         self,
-        factions: list["Faction"],
+        factions: list[Faction],
         changed_faction_ids: set[str],
         prev_territories: list[int],
     ) -> tuple[list[int], list[dict]]:

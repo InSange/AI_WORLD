@@ -6,10 +6,11 @@ YAML 기반 종족·세계관 설정 파일을 자동 탐색·로드한다.
 """
 from __future__ import annotations
 
-import yaml
-from pathlib import Path
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
+
+import yaml
 
 # configs/ 폴더 절대 경로
 _ROOT = Path(__file__).parent.parent.parent  # apps/worldai/
@@ -227,7 +228,7 @@ if __name__ == "__main__":
     races = load_all_races()
     print(f"\n총 {len(races)}개 종족 로드 완료\n")
 
-    for race_id, race in races.items():
+    for race in races.values():
         print(f"  [{race.tier}티어] {race.name} ({race.name_en})")
         print(f"    카테고리: {race.category}")
         print(f"    인구 성장률: {race.stats.growth_rate} | 전투력: {race.stats.military_strength}")

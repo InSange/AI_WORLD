@@ -8,11 +8,14 @@
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Request, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
+
 from src.api.schemas import (
-    WorldStateSchema, RaceStatusSchema,
-    DiplomacyRelationSchema, EventSchema,
+    DiplomacyRelationSchema,
+    EventSchema,
+    RaceStatusSchema,
     WorldMapSchema,
+    WorldStateSchema,
 )
 from src.core.models import AffinityLevel
 

@@ -12,8 +12,9 @@ WorldAI Event System
 from __future__ import annotations
 
 import random
-from typing import Callable
-from .models import RaceState, EventLog
+from collections.abc import Callable
+
+from .models import EventLog, RaceState
 
 # 몬스터 유형 테이블
 _MONSTER_TYPES = [

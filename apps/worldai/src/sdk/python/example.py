@@ -1,11 +1,12 @@
 import asyncio
-import sys
 import os
+import sys
 
 # src 폴더를 sys.path에 추가하여 패키지를 인식하도록 함
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from src.sdk.python.worldai_client import WorldAIClient
+
 
 async def event_handler(msg_dict):
     print(f"\n[WebSocket Event] {msg_dict.get('type')}: {str(msg_dict)[:200]}...")

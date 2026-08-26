@@ -13,11 +13,12 @@ ReDoc:       http://localhost:8000/redoc
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+
 from src.api.websocket_manager import manager
 
 # 앱 루트를 sys.path에 추가
@@ -25,11 +26,9 @@ _APP_ROOT = Path(__file__).parent.parent.parent  # apps/worldai/
 if str(_APP_ROOT) not in sys.path:
     sys.path.insert(0, str(_APP_ROOT))
 
-# ruff: noqa: E402
-from src.core.world import World
 from src.core.faction_manager import FactionManager
 from src.core.models import AffiliationType
-
+from src.core.world import World
 
 # ── 기본 파벌 초기화 ──────────────────────────────────
 
@@ -139,7 +138,7 @@ app.add_middleware(
 
 # ── 라우터 등록 ──────────────────────────────────────
 
-from src.api.routes import simulation, world, factions  # noqa: E402
+from src.api.routes import factions, simulation, world
 
 app.include_router(simulation.router, prefix="/simulation", tags=["Simulation"])
 app.include_router(world.router,      prefix="/world",      tags=["World"])

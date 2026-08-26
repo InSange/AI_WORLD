@@ -1,0 +1,33 @@
+# Ruff 설정
+#
+# select 를 명시하지 않으면 ruff 버전이 올라갈 때 기본 규칙셋이 넓어져
+# 코드를 바꾸지 않았는데도 CI가 깨진다. 실제로 2026-08 에 그 일이 있었다.
+# 그래서 검사할 규칙을 여기에 고정해 둔다.
+
+target-version = "py311"
+line-length = 120
+
+[lint]
+select = [
+    "E",     # pycodestyle
+    "F",     # Pyflakes
+    "I",     # isort (import 정렬)
+    "UP",    # pyupgrade (구식 문법)
+    "B",     # flake8-bugbear
+    "SIM",   # flake8-simplify
+    "PERF",  # Perflint
+    "BLE",   # flake8-blind-except
+    "RUF",   # Ruff 자체 규칙
+]
+
+ignore = [
+    "E501",    # 줄 길이는 line-length 로 관리
+    "BLE001",  # WebSocket 수신 루프, YAML 개별 로드 등 경계 지점에서
+               # broad except 는 의도된 설계다. 하나가 실패해도 전체를
+               # 멈추지 않기 위한 것이므로 예외로 둔다.
+    "E402",    # sys.path.insert() 이후에 import 해야 하는 파일이 있고,
+               # main.py 의 라우터 등록은 순환 참조를 피하려는 지연 import 다.
+    "UP042",   # (str, Enum) -> StrEnum 전환 제안. 두 방식은 str() 결과가
+               # 달라 API 응답 형태가 바뀔 수 있어 별도 작업으로 미룬다.
+    "RUF003",  # 한글 주석 안의 곱셈 기호(x) 를 오탐한다.
+]

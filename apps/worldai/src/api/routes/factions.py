@@ -9,11 +9,16 @@
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Request, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
+
 from src.api.schemas import (
-    FactionSchema, FactionListSchema, LeaderSchema,
-    ReligionSchema, TranscendentTriggerRequest, MessageResponse,
+    FactionListSchema,
+    FactionSchema,
+    LeaderSchema,
+    MessageResponse,
     PopulationSegmentSchema,
+    ReligionSchema,
+    TranscendentTriggerRequest,
 )
 from src.core.models import TranscendentType
 
@@ -176,8 +181,8 @@ async def trigger_transcendent(
 
     try:
         t_type = TranscendentType(body.transcendent_type)
-    except ValueError:
-        raise HTTPException(400, f"올바르지 않은 초월 유형: {body.transcendent_type}")
+    except ValueError as err:
+        raise HTTPException(400, f"올바르지 않은 초월 유형: {body.transcendent_type}") from err
 
     world = req.app.state.world
     evt = fm.trigger_transcendent_event(

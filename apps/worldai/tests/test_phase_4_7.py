@@ -27,7 +27,7 @@ def test_map_generation():
     
     summary = world_map.to_summary_dict()
     print(f"Summary data length: {len(summary['data'])}")
-    assert len(summary['data']) == 100 * 80
+    assert len(summary['data']) == world_map.width * world_map.height
     print("✅ Map Generation OK")
 
 def test_population_segments():

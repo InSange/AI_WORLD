@@ -7,8 +7,14 @@
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Request, HTTPException, Query
-from src.api.schemas import SimulationStatusSchema, TickResultSchema, EventSchema, MessageResponse
+from fastapi import APIRouter, HTTPException, Query, Request
+
+from src.api.schemas import (
+    EventSchema,
+    MessageResponse,
+    SimulationStatusSchema,
+    TickResultSchema,
+)
 from src.api.websocket_manager import manager
 
 router = APIRouter()
@@ -166,9 +172,10 @@ async def run_ticks(
             world_map=world.map,
         )
         all_events = result.events + faction_events
-        for e in all_events:
-            if e.event_type not in ("SEASON_CHANGE",):  # 계절 변화는 요약에서 제외
-                collected_events.append(e.to_dict())
+        # 계절 변화는 요약에서 제외
+        collected_events.extend(
+            e.to_dict() for e in all_events if e.event_type not in ("SEASON_CHANGE",)
+        )
 
     for race in world.active_races:
         pop_snapshots[race.id] = int(race.population)
@@ -204,8 +211,8 @@ async def reset_simulation(req: Request):
     시뮬레이션을 초기 상태로 리셋한다.
     World와 FactionManager를 새로 생성한다.
     """
-    from src.core.world import World
     from src.core.faction_manager import FactionManager
+    from src.core.world import World
 
     world = World.from_config("asteria")
     fm = FactionManager()

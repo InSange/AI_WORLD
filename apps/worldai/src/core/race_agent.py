@@ -15,8 +15,9 @@ WorldAI Race Agent
 from __future__ import annotations
 
 import random
-from typing import Callable
-from .models import Action, ActionType, RaceState, AffinityLevel, EventLog
+from collections.abc import Callable
+
+from .models import Action, ActionType, AffinityLevel, EventLog, RaceState
 
 # 행동 발생 기본 확률 (틱당)
 _BASE_TRADE_CHANCE    = 0.15
@@ -91,11 +92,12 @@ class RaceAgent:
 
         # ── 4. 외교 협상 ──
         neg_target = self._find_negotiate_target(race, others, get_affinity)
-        if neg_target and random.random() < race.alliance_tendency * _BASE_NEGOTIATE_CHANCE:
-            if random.random() > race.isolationism:
-                return Action(race.id, ActionType.NEGOTIATE,
-                              target_race_id=neg_target.id,
-                              metadata={"reason": "alliance_building"})
+        if (neg_target
+                and random.random() < race.alliance_tendency * _BASE_NEGOTIATE_CHANCE
+                and random.random() > race.isolationism):
+            return Action(race.id, ActionType.NEGOTIATE,
+                          target_race_id=neg_target.id,
+                          metadata={"reason": "alliance_building"})
 
         # ── 5. 기술 연구 ──
         if random.random() < _BASE_RESEARCH_CHANCE:
