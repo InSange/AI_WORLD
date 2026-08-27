@@ -73,6 +73,29 @@ def _setup_default_factions(world: World, fm: FactionManager) -> None:
     # ── 초월자
     spawn("peak_dragon_grimm", "고대룡 그리말", "dragon", 1, specs=["apex_predator"])
 
+    # ── 종족 인구와 파벌 인구의 스케일 정합
+    # 위 파벌 인구는 이 파일에 하드코딩돼 있고, 종족 시작 인구는 YAML 에서 온다.
+    # 두 값이 따로 정해져 있어 그대로 합산하면 종족 max_population 을 넘긴다.
+    # 종족별 파벌 인구의 합이 그 종족의 시작 인구와 일치하도록 맞춘다.
+    for race in world.active_races:
+        race_factions = fm.by_race(race.id)
+
+        if not race_factions:
+            # 파벌이 하나도 없는 종족은 본거지 하나를 만들어 준다.
+            # (없으면 그 종족만 인구가 갱신되지 않고 멈춘다)
+            spawn(f"{race.id}_homeland", f"{race.name}의 본거지", race.id, race.population)
+            continue
+
+        current = sum(f.population for f in race_factions)
+        if current <= 0:
+            continue
+
+        ratio = race.population / current
+        for faction in race_factions:
+            for segment in faction.population_segments:
+                segment.count *= ratio
+            faction.update_scale()
+
     print(f"✅ 동적 지형 탐색 기반 파벌 {len(fm.all_factions())}개 생성 완료")
 
 
@@ -85,6 +108,7 @@ async def lifespan(app: FastAPI):
     world = World.from_config("asteria")
     faction_manager = FactionManager()
     _setup_default_factions(world, faction_manager)
+    world.bind_faction_manager(faction_manager)
 
     app.state.world = world
     app.state.fm = faction_manager

@@ -127,6 +127,10 @@ class World:
     # 세계 이벤트 시스템
     _event_system: EventSystem = field(default_factory=EventSystem, repr=False)
 
+    # 파벌 매니저. API 계층에서 bind_faction_manager() 로 주입한다.
+    # 주입되면 RaceState 인구가 하위 파벌 인구의 합으로 갱신된다.
+    _faction_manager: Any | None = field(default=None, repr=False)
+
     # ── 프로퍼티 ─────────────────────
 
     @property
@@ -152,6 +156,46 @@ class World:
     @property
     def active_races(self) -> list[RaceState]:
         return [r for r in self.races.values() if r.is_alive]
+
+    # ── 내부 헬퍼 ────────────────────
+
+    def _apply_race_population_to_factions(self) -> None:
+        """종족 인구 변화를 하위 파벌에 비례 배분한다.
+
+        평소 종족 인구는 파벌 합계로 계산되지만, 이벤트 시스템은
+        종족 인구를 직접 깎는다. 그 결과를 파벌 쪽에 반영해 두지 않으면
+        다음 틱에 덮어써져 없던 일이 된다.
+        """
+        if self._faction_manager is None:
+            return
+
+        for race in self.active_races:
+            factions = self._faction_manager.by_race(race.id)
+            if not factions:
+                continue
+
+            current = sum(f.population for f in factions)
+            if current <= 0:
+                continue
+
+            ratio = race.population / current
+            if abs(ratio - 1.0) < 1e-9:
+                continue
+
+            for faction in factions:
+                for segment in faction.population_segments:
+                    segment.count = max(0.0, segment.count * ratio)
+
+    # ── 외부 주입 ────────────────────
+
+    def bind_faction_manager(self, faction_manager: Any) -> None:
+        """FactionManager 를 연결한다.
+
+        RaceState 인구는 자체 성장 로직을 갖지 않고, 하위 파벌 인구의
+        합계로 갱신된다(settlement-based population). 연결하지 않으면
+        종족 인구가 파벌과 동기화되지 않으므로 반드시 호출해야 한다.
+        """
+        self._faction_manager = faction_manager
 
     # ── 생성자 ───────────────────────
 
@@ -256,7 +300,7 @@ class World:
         # RaceState 인구는 하위 파벌들의 합계로 갱신 (settlement-based population core)
         for race in self.active_races:
             old_pop = race.population
-            factions = self._api_state_fm.by_race(race.id) if hasattr(self, "_api_state_fm") else []
+            factions = self._faction_manager.by_race(race.id) if self._faction_manager else []
             # RaceState._population 직접 업데이트 (setter 호출)
             if factions:
                 race.population = sum(f.population for f in factions)
@@ -269,6 +313,11 @@ class World:
             tick=self.tick,
         )
         events.extend(world_events)
+
+        # 2c. 이벤트가 깎은 종족 인구를 하위 파벌에 되돌린다.
+        # 이 반영이 없으면 다음 틱의 2번 단계에서 파벌 합계로 덮어써져
+        # 기근·역병·습격의 인구 피해가 통째로 사라진다.
+        self._apply_race_population_to_factions()
 
         # 3. 외교 자연 감쇠 ────────────────────────
         self.diplomacy.decay_all(decay_rate=0.001)
