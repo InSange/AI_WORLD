@@ -33,6 +33,10 @@ _MONSTER_TYPES = [
 # 역병 면역 종족
 _PLAGUE_IMMUNE = {"undead", "golem"}
 
+# 이 값 이하로 사이가 나쁜 상대만 습격 대상이 된다.
+# (AffinityLevel 기준 DIPLOMATIC_TENSION 경계와 같다)
+_RAID_AFFINITY_THRESHOLD = -10.0
+
 
 class EventSystem:
     """
@@ -49,6 +53,7 @@ class EventSystem:
         races: dict[str, RaceState],
         diplomacy_adjust: Callable,   # (from_id, to_id, delta, reason, tick) → EventLog|None
         tick: int,
+        get_affinity: Callable[[str, str], float] | None = None,  # (from_id, to_id) → -100~+100
     ) -> list[EventLog]:
         events: list[EventLog] = []
 
@@ -63,7 +68,7 @@ class EventSystem:
 
         # 2. 습격 이벤트 (72틱 = 3일마다)
         if tick % 72 == 0:
-            evts = self._check_raids(races, diplomacy_adjust, tick)
+            evts = self._check_raids(races, diplomacy_adjust, tick, get_affinity)
             events.extend(evts)
 
         # 3. 몬스터 토벌 이벤트 (240틱 = 10일마다, 20% 확률)
@@ -134,6 +139,7 @@ class EventSystem:
         races: dict[str, RaceState],
         diplomacy_adjust: Callable,
         tick: int,
+        get_affinity: Callable[[str, str], float] | None = None,
     ) -> list[EventLog]:
         events: list[EventLog] = []
 
@@ -150,20 +156,30 @@ class EventSystem:
             if random.random() > aggressor.aggression * 0.15:
                 continue
 
-            # 가장 적대적인 대상 파악 (직접 호스트일 타겟 리스트 생성)
-            # candidates 가져오는 더 안전한 방법: 클로저 기반
-            # (diplomacy_adjust signature: (a, b, delta, reason, tick) → EventLog|None)
-            # 여기서는 races에서 직접 필터링
-
-            hostile_targets = [
+            # 습격 대상은 실제로 사이가 나쁜 상대 중에서 고른다.
+            # 예전에는 조건이 aggressor.aggression > 0.5 라서 대상과
+            # 무관했고, 그 결과 혈맹을 맺은 상대도 똑같이 습격당했다.
+            candidates = [
                 r for r in races.values()
                 if r.id != aggressor.id and r.is_alive
-                and aggressor.aggression > 0.5
             ]
-            if not hostile_targets:
-                continue
-
-            target = random.choice(hostile_targets)
+            if get_affinity is not None:
+                hostile_targets = [
+                    r for r in candidates
+                    if get_affinity(aggressor.id, r.id) <= _RAID_AFFINITY_THRESHOLD
+                ]
+                # 사이 나쁜 상대가 없으면 이번엔 습격하지 않는다.
+                if not hostile_targets:
+                    continue
+                # 가장 적대적인 쪽을 우선하되 완전히 결정적이지는 않게 한다.
+                hostile_targets.sort(key=lambda r: get_affinity(aggressor.id, r.id))
+                pick = min(len(hostile_targets), 3)
+                target = random.choice(hostile_targets[:pick])
+            else:
+                hostile_targets = candidates
+                if not hostile_targets:
+                    continue
+                target = random.choice(hostile_targets)
             evt = self._resolve_combat(aggressor, target, diplomacy_adjust, tick, reason="raid")
             if evt:
                 events.append(evt)

@@ -315,6 +315,7 @@ class World:
             races=self.races,
             diplomacy_adjust=self.diplomacy.adjust,
             tick=self.tick,
+            get_affinity=self.diplomacy.get,
         )
         events.extend(world_events)
 
