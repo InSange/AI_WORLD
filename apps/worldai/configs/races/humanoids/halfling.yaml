@@ -11,7 +11,7 @@ description: >
 
 stats:
   max_population: 4000
-  growth_rate: 1.006
+  growth_rate: 1.018
   military_strength: 30     # 낮은 전투력 — 직접 전투 회피
   magic_affinity: 20
   technology_level: 45

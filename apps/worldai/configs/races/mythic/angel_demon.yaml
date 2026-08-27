@@ -32,7 +32,7 @@ factions:
 
 stats:
   max_population: 300       # 극소수
-  growth_rate: 1.001
+  growth_rate: 1.003
   military_strength: 95
   magic_affinity: 100
   technology_level: 5       # 마법에만 의존

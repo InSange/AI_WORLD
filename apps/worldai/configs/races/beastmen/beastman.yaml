@@ -11,7 +11,7 @@ description: >
 
 stats:
   max_population: 6000
-  growth_rate: 1.009
+  growth_rate: 1.027
   military_strength: 70
   magic_affinity: 25
   technology_level: 35

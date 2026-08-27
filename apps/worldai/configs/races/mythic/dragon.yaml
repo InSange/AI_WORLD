@@ -12,7 +12,7 @@ description: >
 
 stats:
   max_population: 200       # 극소수
-  growth_rate: 1.0005       # 매우 느린 번식
+  growth_rate: 1.0015       # 매우 느린 번식
   military_strength: 100    # 개체 최강
   magic_affinity: 95
   technology_level: 40      # 기술보다 본능과 마법

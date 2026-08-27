@@ -37,6 +37,14 @@ _PLAGUE_IMMUNE = {"undead", "golem"}
 # (AffinityLevel 기준 DIPLOMATIC_TENSION 경계와 같다)
 _RAID_AFFINITY_THRESHOLD = -10.0
 
+# 같은 종족이 다시 습격하기까지의 최소 간격 (720틱 = 30일)
+_RAID_COOLDOWN_TICKS = 720
+
+# 습격 판정 시 발생 확률 계수. aggression 에 곱해진다.
+# 습격은 서로에게 -20 의 적대감을 남겨 다음 습격을 부르므로,
+# 계수가 크면 전쟁이 끝없이 이어지며 세계 인구가 회복하지 못한다.
+_RAID_CHANCE_FACTOR = 0.02
+
 
 class EventSystem:
     """
@@ -71,8 +79,10 @@ class EventSystem:
             evts = self._check_raids(races, diplomacy_adjust, tick, get_affinity)
             events.extend(evts)
 
-        # 3. 몬스터 토벌 이벤트 (240틱 = 10일마다, 20% 확률)
-        if tick % 240 == 0 and random.random() < 0.20:
+        # 3. 몬스터 토벌 이벤트 (720틱 = 30일마다, 15% 확률)
+        # 10일마다 20%(연 7회)는 습격과 겹쳐 종족이 회복할 틈이 없었다.
+        # 재난은 드물게 일어나되 한 번이 무겁도록 잡는다.
+        if tick % 720 == 0 and random.random() < 0.15:
             evts = self._monster_raid(races, diplomacy_adjust, tick)
             events.extend(evts)
 
@@ -148,12 +158,13 @@ class EventSystem:
                 continue
             if aggressor.aggression < 0.55:
                 continue
-            # 쿨다운 확인 (같은 종족이 연속 습격 방지: 30틱 간격)
+            # 쿨다운 확인 (같은 종족이 연속 습격 방지)
+            # 30틱(=30시간)은 사실상 상시 전쟁이라 종족이 회복할 틈이 없다.
             last = self._raid_cooldown.get(aggressor.id, 0)
-            if tick - last < 30:
+            if tick - last < _RAID_COOLDOWN_TICKS:
                 continue
             # 발생 확률: aggression에 비례
-            if random.random() > aggressor.aggression * 0.15:
+            if random.random() > aggressor.aggression * _RAID_CHANCE_FACTOR:
                 continue
 
             # 습격 대상은 실제로 사이가 나쁜 상대 중에서 고른다.
@@ -205,9 +216,8 @@ class EventSystem:
 
         if attacker_power > defender_power:
             # 공격 성공
-            # 습격 판정은 72틱(3일)마다 돌아 연 20회 남짓 발생한다.
-            # 회당 손실이 크면 종족이 몇 년 안에 소멸하므로 낮게 잡는다.
-            loss_pct = random.uniform(0.010, 0.030)
+            # 습격은 드물게 일어나되 한 번이 무겁도록 잡는다.
+            loss_pct = random.uniform(0.020, 0.050)
             lost = target.population * loss_pct
             target.population = max(1.0, target.population - lost)
             target.morale = max(0.3, target.morale - 0.10)
@@ -234,7 +244,7 @@ class EventSystem:
             )
         else:
             # 공격 실패
-            loss_pct = random.uniform(0.005, 0.018)
+            loss_pct = random.uniform(0.010, 0.030)
             lost = attacker.population * loss_pct
             attacker.population = max(1.0, attacker.population - lost)
             attacker.morale = max(0.3, attacker.morale - 0.10)

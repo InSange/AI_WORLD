@@ -11,7 +11,7 @@ description: >
 
 stats:
   max_population: 3000
-  growth_rate: 1.002        # 출생률 매우 낮음
+  growth_rate: 1.006        # 출생률 매우 낮음
   military_strength: 65
   magic_affinity: 90
   technology_level: 55

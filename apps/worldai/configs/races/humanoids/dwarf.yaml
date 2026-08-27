@@ -11,7 +11,7 @@ description: >
 
 stats:
   max_population: 5000
-  growth_rate: 1.004
+  growth_rate: 1.012
   military_strength: 75
   magic_affinity: 15
   technology_level: 90      # 공학/제련 기술 최고

@@ -12,7 +12,7 @@ description: >
 
 stats:
   max_population: 10000
-  growth_rate: 1.005        # 보통 번식 — 압도적 우위 방지
+  growth_rate: 1.015        # 보통 번식 — 압도적 우위 방지
   military_strength: 60
   magic_affinity: 30
   technology_level: 65      # 기술 중상위권, 시간 지나면서 올라감

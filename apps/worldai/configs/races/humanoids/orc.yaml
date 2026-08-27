@@ -11,7 +11,7 @@ description: >
 
 stats:
   max_population: 8000
-  growth_rate: 1.012        # 빠른 번식 (번식력이 강점)
+  growth_rate: 1.036        # 빠른 번식 (번식력이 강점)
   military_strength: 80
   magic_affinity: 10
   technology_level: 25      # 기술 낮음 — 약탈로 보완

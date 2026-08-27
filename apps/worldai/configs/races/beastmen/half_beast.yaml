@@ -10,7 +10,7 @@ description: >
 
 stats:
   max_population: 1500      # 희귀종
-  growth_rate: 1.003
+  growth_rate: 1.009
   military_strength: 75
   magic_affinity: 40
   technology_level: 30
