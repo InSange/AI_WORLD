@@ -17,14 +17,17 @@ from collections.abc import Callable
 from .models import EventLog, RaceState
 
 # 몬스터 유형 테이블
+# (이름, 인구 손실률, 계열)
+# 손실률은 240틱(10일)마다 20% 확률로 1~3개 종족에 적용된다.
+# 연 7회 남짓 발생하므로 회당 손실을 낮게 잡아야 종족이 버틴다.
 _MONSTER_TYPES = [
-    ("드래곤 군락의 습격", 0.08,  "mythic"),
-    ("오거 무리의 난동",   0.06,  "common"),
-    ("트롤 떼의 마을 공격", 0.04, "common"),
-    ("언데드 물결",        0.07,  "undead"),
-    ("마왕의 선봉대",      0.12,  "mythic"),
-    ("고블린 대습격",      0.05,  "common"),
-    ("격화된 정령 폭주",   0.05,  "elemental"),
+    ("드래곤 군락의 습격", 0.020, "mythic"),
+    ("오거 무리의 난동",   0.015, "common"),
+    ("트롤 떼의 마을 공격", 0.010, "common"),
+    ("언데드 물결",        0.018, "undead"),
+    ("마왕의 선봉대",      0.030, "mythic"),
+    ("고블린 대습격",      0.012, "common"),
+    ("격화된 정령 폭주",   0.012, "elemental"),
 ]
 
 # 역병 면역 종족
@@ -186,7 +189,9 @@ class EventSystem:
 
         if attacker_power > defender_power:
             # 공격 성공
-            loss_pct = random.uniform(0.04, 0.12)
+            # 습격 판정은 72틱(3일)마다 돌아 연 20회 남짓 발생한다.
+            # 회당 손실이 크면 종족이 몇 년 안에 소멸하므로 낮게 잡는다.
+            loss_pct = random.uniform(0.010, 0.030)
             lost = target.population * loss_pct
             target.population = max(1.0, target.population - lost)
             target.morale = max(0.3, target.morale - 0.10)
@@ -213,7 +218,7 @@ class EventSystem:
             )
         else:
             # 공격 실패
-            loss_pct = random.uniform(0.02, 0.07)
+            loss_pct = random.uniform(0.005, 0.018)
             lost = attacker.population * loss_pct
             attacker.population = max(1.0, attacker.population - lost)
             attacker.morale = max(0.3, attacker.morale - 0.10)
