@@ -1,3 +1,6 @@
+# 주의: start_region 키는 더 이상 사용하지 않는다.
+# 파벌 시작 위치는 종족 YAML 의 preferred_biomes 를 기준으로
+# WorldMap.find_suitable_location() 이 지형을 탐색해 정한다.
 id: asteria
 name: 아스테리아 (Asteria)
 description: "별들의 땅. 다양한 종족이 공존하는 판타지 대륙. WorldAI 기본 세계관."
@@ -89,51 +92,40 @@ world_events:
 
 starting_races:
   - id: human
-    start_region: central_plains
     population: 2000
     tech_level: 65
 
   - id: elf
-    start_region: western_forest
     population: 800
     tech_level: 55
 
   - id: dwarf
-    start_region: eastern_mountain
     population: 600
     tech_level: 90
 
   - id: orc
-    start_region: northern_plains
     population: 1500
     tech_level: 25
 
   - id: halfling
-    start_region: central_plains
     population: 700
     tech_level: 45
 
   # 나머지 종족은 랜덤 배치 (optional)
   - id: beastman
-    start_region: random_wild
     population: 900
 
   - id: fairy
-    start_region: western_forest
     population: 400
 
   - id: dragon
-    start_region: mountain_peak
     population: 20
 
   - id: undead
-    start_region: southern_wasteland
     population: 300
 
   - id: elemental
-    start_region: magic_zone
     population: 200
 
   - id: golem
-    start_region: eastern_mountain   # 드워프가 최초 제작
     population: 100

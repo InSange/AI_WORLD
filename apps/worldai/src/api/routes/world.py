@@ -180,11 +180,19 @@ async def get_map(req: Request):
 
 # ── GET /world/events ─────────────────────────────────
 
+# 시각 표시용 이벤트. 실제 사건이 아니라 타임라인 마커라서 기본 조회에서 뺀다.
+_SYSTEM_EVENT_TYPES = ("DAY_START", "SEASON_CHANGE")
+
+
 @router.get("/events", summary="이벤트 로그")
 async def get_events(
     req: Request,
     limit: int = Query(default=20, ge=1, le=200),
     event_type: str | None = Query(default=None, description="이벤트 타입 필터"),
+    include_system: bool = Query(
+        default=False,
+        description="DAY_START·SEASON_CHANGE 같은 시각 표시 이벤트를 포함할지 여부",
+    ),
 ):
     """
     발생한 이벤트 로그를 반환한다.
@@ -194,6 +202,8 @@ async def get_events(
     events = list(reversed(world.event_log))
     if event_type:
         events = [e for e in events if e.event_type == event_type]
+    elif not include_system:
+        events = [e for e in events if e.event_type not in _SYSTEM_EVENT_TYPES]
     events = events[:limit]
     return {
         "total_logged": len(world.event_log),

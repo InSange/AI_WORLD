@@ -48,6 +48,13 @@
 
 ### 지역 목록 (7개 권역)
 
+> **구현 현황 (Phase 4.7 이후)**
+> 아래 권역 구분은 세계관 설정이며, 현재 시뮬레이션은 이 ID(`northern_tundra` 등)를
+> 코드에서 사용하지 않는다. 파벌 배치는 종족 YAML 의 `preferred_biomes` 를 기준으로
+> `WorldMap.find_suitable_location()` 이 200x200 지형에서 적합한 타일을 찾아 정하고,
+> 파벌의 `region` 값에는 그 타일의 생물군계 이름(산맥, 숲, 황무지 등)이 들어간다.
+> 따라서 `GET /factions/by-region/{region}` 도 생물군계 이름으로 조회해야 한다.
+
 #### 🏔️ 북부 설원·산악 (Northern Tundra)
 - **좌표**: Y 0 ~ 18
 - **기후**: 혹한, 강설, 짧은 여름

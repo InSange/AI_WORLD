@@ -7,7 +7,7 @@
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, Query, Request
 
 from src.api.schemas import (
     EventSchema,
@@ -124,7 +124,9 @@ async def tick_once(req: Request):
         hour=world.hour_of_day,
         day_phase=world.day_phase.value,
         is_daytime=world.is_daytime,
-        population_changes={k: round(v, 2) for k, v in result.population_changes.items()},
+        # growth_rate 가 연간 기준이라 1틱(1시간) 변화량은 소수점 아래 몇 자리다.
+        # 2자리에서 반올림하면 전부 0으로 보이므로 자릿수를 늘린다.
+        population_changes={k: round(v, 4) for k, v in result.population_changes.items()},
         events=[
             EventSchema(
                 tick=e.tick,
@@ -151,10 +153,9 @@ async def run_ticks(
     """
     지정된 틱 수만큼 시뮬레이션을 연속 실행한다.
     완료 후 요약 결과를 반환한다 (최대 1000틱).
-    """
-    if ticks > 1000:
-        raise HTTPException(400, "한 번에 최대 1000틱까지 실행 가능합니다.")
 
+    상한은 위 Query(le=1000) 에서 검증되며 초과 시 422 를 반환한다.
+    """
     world = _world(req)
     fm = _fm(req)
     race_growths = {r.id: r.growth_rate for r in world.races.values()}
