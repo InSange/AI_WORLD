@@ -56,11 +56,15 @@ _DAY_HOURS: dict[Season, tuple[int, int]] = {
 }
 
 # 계절별 인구 성장 배수
+# 계절별 인구 증감 배수.
+# growth_rate 에서 뽑아낸 성장률(growth_rate - 1.0)에 곱해진다.
+# 값이 음수인 계절에는 인구가 실제로 줄어든다.
+# 네 계절 합이 4.0(평균 1.0)이라, 1년을 다 돌면 종족의 연간 성장률과 일치한다.
 SEASON_POP_MODIFIER: dict[Season, float] = {
-    Season.SPRING: 1.10,
-    Season.SUMMER: 1.00,
-    Season.AUTUMN: 0.98,
-    Season.WINTER: 0.80,
+    Season.SPRING: 2.50,   # 번식기
+    Season.SUMMER: 1.50,
+    Season.AUTUMN: 0.50,   # 수확 이후 둔화
+    Season.WINTER: -0.50,  # 혹한기, 인구 감소
 }
 
 # 계절별 기술 연구 배수

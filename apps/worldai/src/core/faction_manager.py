@@ -245,24 +245,28 @@ class FactionManager:
 
     def tick(
         self,
-        get_race_growth: Callable[[str], float],  # race_id → growth_rate
+        get_race_growth: Callable[[str], float],  # race_id → 연간 growth_rate
         season_pop_mod: float,
         tick: int,
         world_map: WorldMap | None = None,
+        ticks_per_year: int = 8640,
     ) -> list[EventLog]:
         """매 틱 파벌 상태 갱신"""
         events: list[EventLog] = []
 
         for faction in list(self.all_factions()):
             # 1. 인구 성장 (세그먼트별)
-            growth = get_race_growth(faction.race)
-            effective = 1.0 + (growth - 1.0) * season_pop_mod
-            
-            # 각 세그먼트 성장
+            # growth_rate 는 "연간" 인구 배수다 (예: 1.005 = 연 0.5% 성장).
+            # 1틱은 1시간이므로 연간 증가율을 틱 수로 나눠 적용한다.
+            # 이 환산 없이 매 틱 곱하면 오크(1.012) 기준 2.4일마다 인구가
+            # 두 배가 되어 한 계절 만에 1500억 배가 된다.
+            annual_rate = get_race_growth(faction.race) - 1.0
+            per_tick_rate = annual_rate / ticks_per_year * season_pop_mod
+
             for segment in faction.population_segments:
-                # 군인은 성장이 느리거나 충원 중심 (0.2배)
-                seg_growth = effective if segment.pop_type != "military" else 1.0 + (effective-1.0)*0.2
-                segment.count *= seg_growth
+                # 군인은 자연 증가가 아니라 충원 중심이므로 증가폭을 20%만 반영
+                rate = per_tick_rate if segment.pop_type != "military" else per_tick_rate * 0.2
+                segment.count = max(0.0, segment.count * (1.0 + rate))
 
             # 2. 인구 이동 (Migration)
             self._handle_migration(faction, world_map)
@@ -292,7 +296,7 @@ class FactionManager:
 
             # 3. 자원 상납 (종속 파벌)
             if faction.affiliation_type in (AffiliationType.COLONY, AffiliationType.VASSAL):
-                self._pay_tribute(faction)
+                self._pay_tribute(faction, ticks_per_year)
 
             # 4. 파벌 간 독립 외교 (거리 기반 상호작용)
             if tick % 10 == 0:  # 10틱마다 스캔
@@ -405,11 +409,15 @@ class FactionManager:
                     )
         return None
 
-    def _pay_tribute(self, faction: Faction) -> None:
-        """상납 처리 (간략화: 인구 성장 페널티로 표현)"""
-        rate = 0.25 if faction.affiliation_type == AffiliationType.COLONY else 0.15
-        factor = (1 - rate * 0.001)
-        
+    def _pay_tribute(self, faction: Faction, ticks_per_year: int = 8640) -> None:
+        """상납 처리 (간략화: 인구 성장 페널티로 표현).
+
+        손실률은 "연간" 기준이다. 틱 단위로 그대로 곱하면
+        식민지가 1년에 인구의 88%를 잃는다.
+        """
+        annual_loss = 0.025 if faction.affiliation_type == AffiliationType.COLONY else 0.015
+        factor = 1.0 - (annual_loss / ticks_per_year)
+
         # 인구 세그먼트 전체에 페널티 적용 (population 프로퍼티는 리드온리이므로)
         for segment in faction.population_segments:
             segment.count = max(0.0, segment.count * factor)

@@ -81,6 +81,7 @@ async def tick_once(req: Request):
         season_pop_mod=season_mod,
         tick=world.tick,
         world_map=world.map,
+        ticks_per_year=world.time_config.ticks_per_year,
     )
     result.events.extend(faction_events)
 
@@ -170,6 +171,7 @@ async def run_ticks(
             season_pop_mod=season_mod,
             tick=world.tick,
             world_map=world.map,
+            ticks_per_year=world.time_config.ticks_per_year,
         )
         all_events = result.events + faction_events
         # 계절 변화는 요약에서 제외
