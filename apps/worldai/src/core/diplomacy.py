@@ -20,6 +20,13 @@ _THRESHOLDS: list[tuple[float, str, str]] = [
     (-60.0, "WAR_DECLARED",        "WAR_ENDED"),
 ]
 
+# 관계 단계 경계값 (오름차순). _THRESHOLDS 를 뒤집은 것.
+_LEVEL_BOUNDS: list[tuple[float, str, str]] = list(reversed(_THRESHOLDS))
+
+# 경계 근처에서 친밀도가 미세하게 흔들려도 단계가 오가지 않도록 두는 여유폭.
+# 이 값이 없으면 자연 감쇠와 상승이 반복되며 같은 이벤트가 계속 발화한다.
+_LEVEL_HYSTERESIS = 3.0
+
 _THRESHOLD_DESCRIPTIONS: dict[str, str] = {
     "BLOOD_PACT_FORMED":   "두 종족이 혈맹을 맺었다. 자원 공유, 공동 전쟁 의무 발생.",
     "BOND_BROKEN":         "혈맹이 파기됐다.",
@@ -46,6 +53,9 @@ class DiplomacySystem:
         self._relations: dict[tuple[str, str], AffinityRecord] = {}
         # 임계값 이벤트 쿨다운: (from, to, threshold) → 마지막 발화 틱
         self._threshold_cooldown: dict[tuple[str, str, float], int] = {}
+        # 관계 단계 기억: (from, to) → 단계 인덱스
+        # 단계가 실제로 바뀔 때만 이벤트를 낸다.
+        self._relation_level: dict[tuple[str, str], int] = {}
 
     # ── 조회 ──────────────────────────
 
@@ -134,6 +144,20 @@ class DiplomacySystem:
             self._relations[key] = AffinityRecord(from_id, to_id, 0.0)
         return self._relations[key]
 
+    def _level_of(self, value: float, previous: int | None) -> int:
+        """친밀도가 속한 관계 단계를 구한다.
+
+        이미 어떤 단계에 있으면 내려올 때 여유폭만큼 더 떨어져야 하고,
+        아래에 있으면 올라갈 때 여유폭만큼 더 올라야 단계가 바뀐다.
+        """
+        level = 0
+        for i, (bound, _, _) in enumerate(_LEVEL_BOUNDS):
+            already_above = previous is not None and previous > i
+            margin = -_LEVEL_HYSTERESIS if already_above else _LEVEL_HYSTERESIS
+            if value > bound + margin:
+                level = i + 1
+        return level
+
     def _check_threshold(
         self,
         from_id: str,
@@ -143,32 +167,49 @@ class DiplomacySystem:
         tick: int,
         cooldown_ticks: int = 60,
     ) -> EventLog | None:
-        """임계값 통과 여부 확인 → EventLog 반환 (쿨다운 적용)"""
-        for threshold, up_event, down_event in _THRESHOLDS:
-            crossed_up   = old <= threshold < new
-            crossed_down = old > threshold >= new
+        """관계 단계가 바뀌었는지 확인 → EventLog 반환.
 
-            if not (crossed_up or crossed_down):
-                continue
+        예전에는 임계값을 지나칠 때마다 발화해서, 친밀도가 경계에서
+        진동하면 같은 쌍이 "혈맹을 맺었다"를 수십 번 반복했다.
+        지금은 단계를 기억해 두고 실제로 달라졌을 때만 이벤트를 낸다.
+        """
+        key = (from_id, to_id)
+        previous = self._relation_level.get(key)
 
-            # 쿨다운 체크: 같은 임계값이 60틱 이내에 이미 발화했으면 무시
-            cd_key = (from_id, to_id, threshold)
-            last_fired = self._threshold_cooldown.get(cd_key, -9999)
-            if tick - last_fired < cooldown_ticks:
-                return None
+        if previous is None:
+            # 첫 관측은 기준점만 잡고 이벤트를 내지 않는다.
+            self._relation_level[key] = self._level_of(new, None)
+            return None
 
-            self._threshold_cooldown[cd_key] = tick
-            event_type = up_event if crossed_up else down_event
-            desc = _THRESHOLD_DESCRIPTIONS.get(event_type, event_type)
-            return EventLog(
-                tick=tick,
-                event_type=event_type,
-                title=f"[외교] {from_id} → {to_id}: {event_type}",
-                description=desc,
-                affected_races=[from_id, to_id],
-                affinity_changes={f"{from_id}→{to_id}": round(new - old, 2)},
-            )
-        return None
+        level = self._level_of(new, previous)
+        if level == previous:
+            return None
+
+        going_up = level > previous
+        # 새로 넘어선(또는 떨어져 나온) 경계
+        bound_idx = level - 1 if going_up else previous - 1
+        bound, up_event, down_event = _LEVEL_BOUNDS[bound_idx]
+
+        # 쿨다운: 같은 경계가 짧은 간격으로 다시 발화하지 않도록 한다.
+        cd_key = (from_id, to_id, bound)
+        last_fired = self._threshold_cooldown.get(cd_key, -9999)
+        if tick - last_fired < cooldown_ticks:
+            self._relation_level[key] = level
+            return None
+
+        self._threshold_cooldown[cd_key] = tick
+        self._relation_level[key] = level
+
+        event_type = up_event if going_up else down_event
+        desc = _THRESHOLD_DESCRIPTIONS.get(event_type, event_type)
+        return EventLog(
+            tick=tick,
+            event_type=event_type,
+            title=f"[외교] {from_id} → {to_id}: {event_type}",
+            description=desc,
+            affected_races=[from_id, to_id],
+            affinity_changes={f"{from_id}→{to_id}": round(new - old, 2)},
+        )
 
     # ── 디버그 ────────────────────────
 
