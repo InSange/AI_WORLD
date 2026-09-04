@@ -129,3 +129,9 @@ starting_races:
 
   - id: golem
     population: 100
+
+  - id: half_beast
+    population: 250
+
+  - id: angel_demon
+    population: 50
